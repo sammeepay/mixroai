@@ -1,0 +1,64 @@
+//===== rAthena Script ======================================= 
+//= Advance Class jobchanger after kRO Normals.
+//===== By: ==================================================
+//= Nana
+//= finished, optimized and tested by Lupus
+//===== Current Version: ===================================== 
+//= 1.3
+//===== Compatible With: ===================================== 
+//= rAthena Project
+//===== Description: ========================================= 
+//= Advance Class jobchanger after kRO Normals.
+//===== Additional Comments: ================================= 
+//= 1.1 Made all into functions, additional checks, etc. [Lupus]
+//= 1.2 Made numbers into constants. [Vicious]
+//= 1.3 Now saves/restores all the quest skills [Lupus]
+//============================================================ 
+
+valkyrie,44,42,5	script	High Priest#Valkyrie	60,{
+	if (ADVJOB == 0 || Upper != 1) {
+		set .@karma_d,rand(1,10);
+		if (.@karma_d > 4) {
+			mes "[High Priest]";
+			mes "ขอแสดงความยินดี";
+			mes "ขอแสดงความนับถือต่อเหล่านักรบ!";
+			close;
+		}
+		mes "[High Priest]";
+		mes "ด้วยพลังแห่งความศักดิ์สิทธิ์ ขอให้เราพบกับความสงบสุข ความเข้มแข็ง และความคุ้มกัน โปรดช่วยให้เราพ้นจากกองกำลังแห่งความชั่วร้าย...";
+		close;
+	}
+	else if (ADVJOB == Job_High_Priest && Class == Job_Acolyte_High && JobLevel > 39) {
+		mes "[High Priest]";
+		mes "โลกของเราต้องการคนที่มีพรสวรรค์และความเชื่อมั่น";
+		mes "โปรดทำความดีต่อไปในฐานะวีรบุรุษแห่งความศักดิ์สิทธิ์ที่ยิ่งใหญ่กว่านี้...";
+		next;
+		mes "[High Priest]";
+		mes "คุณอยากเป็นมหาปุโรหิตไหม?";
+		next;
+		if (select("ไม่:ใช่.") == 1) {
+			mes "[High Priest]";
+			mes "เมื่อคุณพร้อมแล้ว โปรดกลับมาได้";
+			mes "ขอแสดงความนับถือต่อเหล่านักรบ!";
+			close;
+		}
+		if (SkillPoint) {
+			mes "[High Priest]";
+			mes "คุณยังสามารถเรียนรู้ทักษะเพิ่มเติมได้ โปรดใช้แต้มทักษะที่เหลือทั้งหมดก่อนกลับมาหาฉัน";
+			close;
+		}
+		jobchange Job_High_Priest;
+		set ADVJOB,0;
+		mes "[High Priest]";
+		mes "ขอแสดงความยินดีด้วย";
+		mes "ในฐานะที่เป็นมหาปุโรหิต ฉันหวังว่าคุณจะนำพาผู้อื่นไปบนเส้นทางสู่ความศักดิ์สิทธิ์...";
+		close;
+	}
+	mes "[High Priest]";
+	mes "ยินดีต้อนรับสู่วัลฮัลลา หอเกียรติยศ";
+	next;
+	mes "[High Priest]";
+	mes "โปรดทำให้ตัวเองรู้สึกสบายขณะที่อยู่ที่นี่";
+	mes "ขอแสดงความนับถือต่อเหล่านักรบ!";
+	close;
+}

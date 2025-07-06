@@ -1,0 +1,2198 @@
+//===== rAthena Script =======================================
+//= Assassin Job Quest
+//===== Description: =========================================
+//= [Official Conversion]
+//= Job Change quest for Assassin class.
+//===== Changelog: ===========================================
+//= 1.0 Used some dialogue from the aegis Assassin script translated By: Pgro Team (OwNaGe)
+//=     Also converted the booby traps from the aegis script.[kobra_k88]
+//= 1.1 Made adjustments to ontouch npcs to work with the new "ontouch" functionality.
+//=     Fixed some duplicate npc names.  Added missing waitingroom triggers.
+//=     Fixed warp in "TimerSin", was supposed to be an areawarp.
+//=     For some reason sometimes the "Nameless One" would have message windows
+//=     without controls.  Changed the doevent that triggers him to an
+//=     addtimer and that seemed make the prob. go away[kobra_k88]
+//= 1.2 Fixed WRONG skillpoint check! [Lupus]
+//= 1.2b Fixed missing commands and typos [Lupus]
+//= 1.3 Baby class Support added [Lupus]
+//= 1.5 Fixed possible EXP abuse [Lupus]
+//= 1.6 Added a func which prevent advanced classes passing
+//=     2nd Job Quests again. It also guides adv classes where
+//=     to go. [Lupus]
+//= 2.0 Changed numbers to constants. [Vicious]
+//= 2.1 Removed Duplicates [Silent]
+//= 2.2 Merged back JFunc. Fixed missing dialogue [Lupus]
+//= 2.3 Fixed typo and change Nameless addtimer to 100 (with 700ms I
+//=     was still able to bypass it) [Toms]
+//= 2.4 Fixed skipping of Nameless NPC [Lupus]
+//= 2.5 Fixed a Rogue exploit [Lupus]
+//= 2.6 Rescripted to Aegis 10.3 standards. [L0ne_W0lf]
+//= 2.7 Several bugfixes with the help of Samuray22 and Barron-Monster. [L0ne_W0lf]
+//= 2.8 Removed duplicate warps. [L0ne_W0lf]
+//= 2.8a Deleted unused variables. [Samuray22]
+//= 2.8b Fixed error caused in last updated, removed useless variable 'joblvl'. [L0ne_W0lf]
+//= 2.9 Fixed an indent and added a 'break;' in hopes of 'fixing' an error [L0ne_W0lf]
+//= 2.9a Corrected a Typo error ";;". [Samuray22]
+//= 2.9b Moved a wrong 'break'. [Zephyrus_cr]
+//= 3.0 Now uses enable and disable waitingroomevent. [L0ne_W0lf]
+//= 3.1 Fixed problem with waiting room. (bugreport:1099) [L0ne_W0lf]
+//= 3.1a Follow up fix. Forgot to replace a label. [L0ne_W0lf]
+//= 3.1b Fixed waiting room not enabled in some situations [Zephyrus]
+//= 3.2 Fixed a question having all correct answers. [brianluau]
+//= 3.3 Added Quest Log commands. [Kisuka]
+//= 3.4 Removed the need for use of 'goto.' [L0ne_W0lf]
+//= 3.5 Fixed the waitingroom where player can enter the Test Area without passing the written exam. Now player will not be warp inside the Test Area when did not passed the written exam instead the player will be warp back to the written exam entrance [JayPee]
+//= 3.6 Fixed broken event calls. [Euphy]
+//= 3.7 Fixed issue that the player can't progress in the quest if timed out at weapon reward step. This issue is fixed on iRO but not on kRO. [https://forums.warpportal.com/index.php?/topic/130060-didnt-receive-necklace-of-oblivion-when-changing-assassin/#entry1496042] [MrAntares]
+//= 3.8 Another 'unofficial fix'. Player can't change job if time out after the necklace is deleted. [Atemo]
+//============================================================
+
+in_moc_16,19,33,1	script	Guildsman#asn	55,{
+	if (Upper == 1) {
+		mes "[Ferocious-looking guy]";
+		mes "หืม? คุณ...?";
+		mes "ฉันรู้สึกว่าคุณแตกต่างจากคนส่วนใหญ่...";
+		next;
+		mes "[Ferocious-looking guy]";
+		mes "ฉันไม่เคยเจอใครน่ากลัวเท่าคุณเลย! ไม่รู้ทำไมฉันถึงไม่ชอบคุณ ฉันคิดว่าคุณควรออกไปซะ!";
+		close;
+	}
+	if (SkillPoint) {
+		mes "[Ferocious-looking guy]";
+		mes "คุณไม่สามารถเปลี่ยนอาชีพได้หากคุณมีแต้มทักษะที่ไม่ได้ใช้จากอาชีพแรก คุณควรใช้แต้มเหล่านั้นให้หมดก่อน";
+		close;
+	}
+	if (ASSIN_Q == 4) {
+		mes "[Ferocious-looking guy]";
+		mes "โอ้ หยุดทำหน้าแบบนั้นได้แล้ว คุณจะเจ็บปวดขนาดนั้นจริงเหรอ?";
+		next;
+		mes "[Ferocious-looking guy]";
+		mes "ว้า ว้า ว้า แกเจ็บนะ ฉันเห็นนะ ดูสิ ฉันจะฟื้น HP กับ SP เอง พอใจไหม?";
+		percentheal 100,100;
+		next;
+		mes "[Ferocious-looking guy]";
+		mes "การจะมีชีวิตอยู่ต่อไปมันยากขนาดนั้นเลยเหรอ??";
+		mes "ทำไมคราวหน้าไม่พยายามให้หนักกว่านี้ล่ะ คุณไม่สามารถบังคับตัวเองให้กลายเป็นนักฆ่าได้...";
+		next;
+		if (select("ฉันจะกลายเป็นนักฆ่าไม่ว่าจะเกิดอะไรขึ้นก็ตาม!:โอ้โห ฉันต้องพักสักหน่อย") == 1) {
+			mes "[Ferocious-looking guy]";
+			mes "โอ้...";
+			mes "เอาล่ะ,";
+			mes "ไปเลย!";
+			close2;
+			ASSIN_Q = 0;
+			warp "in_moc_16",19,76;
+			end;
+		}
+		mes "[Ferocious-looking guy]";
+		mes "พักสักครู่ไหม? เอาล่ะ ตามใจคุณเถอะ เมื่อคุณรู้สึกว่าพร้อมที่จะเป็นนักฆ่าแล้ว ก็กลับมา";
+		next;
+		mes "[Ferocious-looking guy]";
+		mes "คุณจะต้องเดินหากคุณต้องการกลับเข้าเมือง โอ้ และอย่าลืมบันทึกจุดเกิดของคุณด้วย?";
+		close2;
+		ASSIN_Q = 0;
+		ASSIN_Q2 = 0;
+		if (ASSIN_Q3 < 3)
+			ASSIN_Q3 = 0;
+		savepoint "in_moc_16",18,14,1,1;
+		warp "in_moc_16",18,14;
+		end;
+	}
+	if (BaseJob == Job_Thief && countitem(1008) == 0 && ASSIN_Q > 7) {
+		mes "[Assassin Expert 'Huey']";
+		mes "เฮ้ เกิดอะไรขึ้น... ทำไมคุณไม่นำ ^006699Necklace of Oblivion^000000 มาด้วยล่ะ คุณควรจะพกติดตัวไปด้วย แล้วมันอยู่ที่ไหน?";
+		next;
+		mes "[Assassin Expert 'Huey']";
+		mes "คุณควรได้รับ ^006699Necklace of Oblivion^000000 อีกครั้งก่อนที่หัวหน้ากิลด์จะรู้! รีบทำอย่างดีที่สุดเพื่อรับมันมา!";
+		next;
+		mes "[Assassin Expert 'Huey']";
+		mes "เมื่อคุณได้มันมาได้สำเร็จแล้ว นำมาให้ฉันซะ! ^666666*ถอนหายใจ*^000000";
+		close;
+	}
+	if (BaseJob == Job_Thief && countitem(1008) > 0 && ASSIN_Q > 7) {
+		mes "[Assassin Expert 'Huey']";
+		mes "อืม อืม เข้าใจแล้ว ขอแสดงความยินดีด้วย! แต่เนื่องจากมันถูกขีดข่วนอย่างชัดเจน ฉันจึงรับไม่ได้ คุณจะไม่มีวันเป็นนักฆ่าได้!";
+		next;
+		mes "[Assassin Expert 'Huey']";
+		mes "ฮ่าๆๆๆ~! ล้อเล่นนะ อย่าคิดมากนะ แต่ฉันต้องเช็คสร้อยคอเส้นนี้กับหัวหน้ากิลด์ก่อน";
+		next;
+		mes "[Assassin Expert 'Huey']";
+		mes "...";
+		next;
+		mes "[Assassin Expert 'Huey']";
+		mes "...";
+		mes "......";
+		next;
+		mes "[Assassin Expert 'Huey']";
+		mes "ใช้ได้!";
+		mes "คุณได้รับการอนุมัติแล้ว!";
+		next;
+		delitem 1008,1; //Frozen_Heart
+		changequest 8007,8008;
+		completequest 8008;
+		callfunc "Job_Change",Job_Assassin;
+		callfunc "F_ClearJobVar";		// clears all job variables for the current player
+		mes "[Assassin Expert 'Huey']";
+		mes "ตอนนี้! พยายามอย่างเต็มที่เพื่อเป็นนักฆ่าผู้ยิ่งใหญ่! เดินทางด้วยศรัทธาและสังหารอย่างมีศักดิ์ศรี แวะมาเยี่ยมเราได้ตลอดเวลา ขอแสดงความยินดีอีกครั้ง";
+		close;
+	}
+	else if (countitem(1008) > 0 && BaseJob == Job_Thief && ASSIN_Q < 7) {
+		mes "[Ferocious-looking guy]";
+		mes "เอ๊ะ?";
+		mes "คุณต้องการอะไร?";
+		next;
+		mes "[Ferocious-looking guy]";
+		mes "ฉันเห็นเธอถือ ^006699Necklace of Oblivion^000000... เธออยากจะเป็นนักฆ่าใช่ไหม? ขอฉันเช็คดูก่อน...";
+		next;
+		mes "[Ferocious-looking guy]";
+		mes "...";
+		next;
+		mes "[Ferocious-looking guy]";
+		mes "...";
+		mes "......";
+		next;
+		mes "[Ferocious-looking guy]";
+		mes "รอก่อนนะ...";
+		mes "ทำไมแกถึงไม่ดีเลยไอ้สารเลว! นี่มันของปลอม!";
+		next;
+		mes "[Ferocious-looking guy]";
+		mes "แกกล้าคิดจะหลอกฉันด้วยของปลอมรึไง! แกโง่หรือไง!? ฉันควรจะฆ่าแกซะ...";
+		close2;
+		warp "moc_fild16",206,229;
+		end;
+	}
+	else {
+		mes "[Ferocious-looking guy]";
+		mes "อะไรทำให้คุณมาที่นี่?";
+		mes "ฉันไม่คิดว่าฉันจะชอบวิธีที่เธอมองฉันเลย พั้งค์";
+		next;
+		if (BaseClass == Job_Novice) {
+			mes "[Ferocious-looking guy]";
+			mes "เฮ้ มือใหม่ คุณควรออกไปจากที่นี่ให้เร็วที่สุด ฉันไม่สามารถรับประกันความปลอดภัยของคุณได้";
+			close;
+		}
+		else if (BaseClass == Job_Swordman) {
+			mes "[Ferocious-looking guy]";
+			mes "อะไรทำให้ชายผู้ถือดาบมาที่นี่ ทำไมคุณไม่ลองทุบสิ่งของที่อื่นล่ะ ไอ้โง่";
+			close;
+		}
+		else if (BaseClass == Job_Mage) {
+			mes "[Ferocious-looking guy]";
+			mes "แล้วผู้ใช้เวทมนตร์จะทำอะไรที่นี่ล่ะ?";
+			next;
+			mes "[Ferocious-looking guy]";
+			mes "มีห้องสมุดอยู่ที่ Prontera และ Juno ซึ่งคุณยินดีต้อนรับ ดังนั้นทำไมคุณไม่ทำเหมือนมายากลแล้วหายตัวไปล่ะ?";
+			close;
+		}
+		else if (BaseClass == Job_Archer) {
+			mes "[Ferocious-looking guy]";
+			mes "ดีดีดี";
+			mes "ดูธนูอันสวยงามนั่นสิ";
+			next;
+			mes "[Ferocious-looking guy]";
+			mes "ไม่ค่อยมีพวกธนูที่กล้าเข้ามาใกล้ที่นี่สักเท่าไร คุณคิดว่าคุณมาทำอะไรที่นี่?!";
+			close;
+		}
+		else if (BaseClass == Job_Acolyte) {
+			mes "[Ferocious-looking guy]";
+			mes "ฉันคิดว่ามีบางอย่างมีกลิ่นแปลกๆ คนรับใช้ของพระเจ้ามาทำอะไรที่นี่ คุณไม่สมควรอยู่ที่นี่";
+			close;
+		}
+		else if (BaseClass == Job_Merchant) {
+			mes "[Ferocious-looking guy]";
+			mes "เราไม่ชอบคนโลภมากแถวนี้ คุณควรขายของของคุณที่อื่นดีกว่านะไอ้พวกถุงเงิน";
+			close;
+		}
+		else if (BaseJob == Job_Rogue) {
+			mes "[Ferocious-looking guy]";
+			mes "คุณดูเหมือนไม่สนใจโลกเลย ฉันหวังว่าคุณจะพักผ่อนให้สนุกในขณะที่อยู่ที่นี่ ไม่เป็นไร เพราะกิลด์ Rogue และ Assassin เข้ากันได้ดีมาตลอด";
+			next;
+			mes "[Ferocious-looking guy]";
+			mes "อนึ่ง...";
+			mes "คุณเคยเห็นผู้หญิงชื่อมาร์กี้ไหม?";
+			next;
+			mes "[Ferocious-looking guy]";
+			mes "มาร์กี้...";
+			mes "เราเคยสัญญากันไว้ว่าจะอยู่ด้วยกันตลอดไป ^666666*ถอนหายใจ*^000000 ฉันไม่คิดว่าเธอจะจำคำสัญญานั้นได้อีกแล้ว อีกอย่าง ตอนนั้นเรายังเด็กมาก...";
+			close;
+		}
+		else if (BaseJob == Job_Assassin) {
+			mes "[Assassin Expert 'Huey']";
+			mes "เฮ้ ฉันจำคุณได้~";
+			mes "ไม่ใช่ชื่อของคุณเหรอ อืม ฉันจำได้ เพราะว่ามันฟังดูตลกดีสำหรับฉัน...";
+			next;
+			mes "[Assassin Expert 'Huey']";
+			mes ":+:" + strcharinfo(0) + ":+: ใช่ไหม? ไม่เป็นไร แค่ "+ strcharinfo(0) +" แค่นั้นเอง เป็นยังไงบ้าง?";
+			next;
+			mes "[Assassin Expert 'Huey']";
+			mes "ขออภัย ฉันไม่มีคำขอใดๆ จากกิลด์ถึงคุณในตอนนี้ คุณแค่ต้องมุ่งมั่นกับการฝึกฝนของคุณต่อไป จนกว่าจะถึงเวลานั้น เจอกันใหม่";
+			close;
+		}
+		else if (BaseJob == Job_Thief && JobLevel > 39) {
+			if (SkillPoint) {
+				mes "[Ferocious-looking guy]";
+				mes "คุณไม่สามารถเปลี่ยนอาชีพได้หากคุณยังมีแต้มทักษะที่ไม่ได้ใช้จากงานแรก คุณควรใช้แต้มทักษะเหล่านั้นให้หมดก่อน";
+				close;
+			}
+			else {
+				mes "[Ferocious-looking guy]";
+				mes "อืม...";
+				mes "หัวขโมย...?";
+				next;
+				mes "[ผู้ชายที่ดูดุร้าย]";
+				mes "และเป็นหัวขโมยที่มากประสบการณ์ด้วย เพราะดูเหมือนฉันจะหากระเป๋าสตางค์ของตัวเองไม่เจอ เราต้องการคนอย่างนายนะ";
+				next;
+				mes "[ผู้ชายที่ดูดุร้าย]";
+				mes "แล้วถ้าเราก้าวต่อไปด้วยการเป็นนักฆ่าล่ะ?";
+				next;
+				switch(select("ใช่ ฉันล้วงกระเป๋าใบสุดท้ายแล้ว :มีข้อกำหนดอะไรบ้าง :บางทีภายหลัง ฉันต้องขโมยของบางอย่างก่อน")) {
+				case 1:
+					mes "[Ferocious-looking guy]";
+					mes "ฉันไม่ได้รับแขกมานานแล้ว ฉันจะส่งคุณไปที่สำนักงาน";
+					close2;
+					ASSIN_Q = 0;
+					if (checkquest(8000) != -1) {
+						changequest 8000,8001;
+					} else {
+						setquest 8001;
+					}
+					warp "in_moc_16",19,76;
+					end;
+				case 2:
+					mes "[Ferocious-looking guy]";
+					mes "คุณสมบัติ? อันดับแรก คุณต้องเป็นโจร อันดับสอง คุณต้องเป็นโจรที่ job level อย่างน้อย 40.";
+					next;
+					mes "[Ferocious-looking guy]";
+					mes "และอันดับสาม คุณต้องผ่านการทดสอบเพื่อที่จะเป็นนักฆ่า คุณได้ทั้งหมดนั้นแล้วเหรอ? ถ้าคุณมั่นใจในความสามารถของคุณในฐานะโจร คุณก็ไม่ต้องกังวล";
+					close;
+				case 3:
+					mes "[Ferocious-looking guy]";
+					mes "อืม...";
+					mes "โอเค";
+					mes "แต่กลับมาเมื่อคุณคิดว่าคุณพร้อมแล้ว";
+					close;
+				}
+			}
+		}
+		else {
+			mes "[Ferocious-looking guy]";
+			mes "หืม คุณยังไม่ผ่านคุณสมบัติที่จะเป็นนักฆ่านะ มีข้อกำหนดที่คุณต้องทำตามก่อนนะ";
+			next;
+			mes "[Ferocious-looking guy]";
+			mes "เอาล่ะ ฝึกฝนต่อไปเถอะ คุณต้องมี job level อย่างน้อย 40 เข้าใจไหม? แต่ถ้าคุณสูงกว่า job level 40 ขึ้นไป นั่นอาจจะดีกว่าด้วยซ้ำ";
+			close;
+		}
+	}
+}
+
+in_moc_16,25,90,1	script	Guildsman#ASN2	730,2,2,{
+	mes "[Assassin 'Khai']";
+	mes "อืมม?!";
+	emotion ET_SURPRISE;
+	next;
+	mes "[Assassin 'Khai']";
+	mes "เข้ามาใกล้ๆ หน่อย ฉันชอบคุยกับคนอื่นแบบเห็นหน้ากันมากกว่า มันจะหงุดหงิดมากถ้าต้องพูดเสียงดังเพื่อให้คุณได้ยิน";
+	mes "ฉันรู้สึกหงุดหงิดเมื่อมีใครมาคุยกับฉันลับหลัง";
+	close;
+
+OnTouch_:
+	if (ASSIN_Q2 == 4) {
+		mes "[Assassin 'Khai']";
+		mes "เอ๊ะ?";
+		mes "นายเพิ่งแซงฉันไปเมื่อนาทีที่แล้วไม่ใช่เหรอ?";
+		next;
+		mes "[Assassin 'Khai']";
+		mes "เอ๊ะ...?!";
+		mes "นายสอบตกเหรอ?";
+		mes "แม้แต่ข้อสอบเขียนด้วยซ้ำเหรอ?";
+		mes "บวาฮ่าฮ่าฮ่า!";
+		next;
+		mes "[Assassin 'Khai']";
+		mes "อืม...";
+		mes "ผ่านไปนานมากแล้วตั้งแต่";
+		mes "ฉันล้มเหลวมามากขนาดนี้";
+		next;
+		mes "[Assassin 'Khai']";
+		mes "ฮ่าฮ่าฮ่าฮ่า~!";
+		mes "โอ้ นายกำลังจะฆ่าฉัน....";
+		next;
+		mes "[Assassin 'Khai']";
+		mes "ขอโทษที่หัวเราะนะ แต่นี่มันตลกมากเลยนะ ฮ่าๆๆ~ แล้วคุณอยากให้ฉันบอกใบ้อะไรคุณหน่อยมั้ย?";
+		next;
+		switch(select("ฉันขอร้องล่ะ ช่วยบอกฉันหน่อย:อย่าหัวเราะเยาะฉันเลย! ตอนนี้ ช่วยบอกฉันหน่อยสิ!:...เงียบไปเถอะ ฉันไม่ต้องการความช่วยเหลือจากคุณ!")) {
+		case 1:
+			mes "[Assassin 'Khai']";
+			mes "ฮ่าฮ่าฮ่าฮ่าฮ่า!!!";
+			mes "เอาจริงๆ นะ แกยังไม่ใช่นักฆ่าด้วยซ้ำ แต่แกกำลังจะฆ่าฉัน ฉันบอกเลย ฆ่าฉัน!";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "โฮ โฮ โฮ...";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "แกได้ยินที่นักฆ่านิรนามพูดไหม! 'ฉันขอร้องล่ะ ช่วยใบ้ให้หน่อย' ฮ่าๆๆ!";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "ใช่";
+			mes "อันนี้ฮาดี แอบน่าสงสาร";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "ฮ่าฮ่าฮ่าฮ่าฮ่าฮ่า!";
+			mes "งั้นแกก็อยากได้คำใบ้บ้างไม่ใช่เหรอ?";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "...";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "...";
+			mes "......";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "...";
+			mes "......";
+			mes ".........";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "...";
+			mes "......";
+			mes ".........";
+			mes "............";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "...";
+			mes "......";
+			mes ".........";
+			mes "...............";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "Nah.";
+			mes "ฉันเปลี่ยนใจแล้ว!";
+			mes "ฉันจะไม่ให้คำใบ้อะไรกับคุณอีก ฮี่ฮี่ฮี่~";
+			close;
+		case 2:
+			mes "[Assassin 'Khai']";
+			if (Sex == SEX_MALE) {
+				mes "หืม คุณคงมีความมั่นใจในตัวเองมากเลยนะ ถึงได้เป็นโจรสมัยนี้";
+				next;
+				mes "[Assassin 'Khai']";
+				mes "ใช่ ใช่ ฉันเข้าใจ ทุกคนทำพลาดกันได้ในบางครั้ง ขอโทษที่หัวเราะเยาะความผิดพลาดของคุณ";
+			}
+			else
+				mes "อืม ฉันชอบทัศนคติของคุณนะ คุณควรจะรักษาศักดิ์ศรีของตัวเองในฐานะโจรไว้ ขอโทษที่หัวเราะเยาะความผิดพลาดของคุณ ฉันคิดว่าคราวหน้าคุณจะทำได้ดีกว่านี้";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "ฉันไม่มีสิทธิ์ให้คำใบ้กับคุณ ฉันสามารถบอกคุณเพิ่มเติมเกี่ยวกับการเป็นนักฆ่าได้...";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "เหนือสิ่งอื่นใด เราให้คุณค่ากับศักดิ์ศรีของเรา เราเป็นนักฆ่า และผู้คนต้องการเรา";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "หากมีคนใกล้ชิดกับคุณในทางใดทางหนึ่ง พวกเขาอาจไม่เข้าใจสิ่งที่ฉันพูด เราเกิดมาเพื่อเป็นคนโดดเดี่ยวเพราะธรรมชาติของเรา";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "ลองนึกภาพว่าถ้าคนรักหรือเพื่อนเห็นเลือดบนมือของคุณ มีโอกาสที่พวกเขาอาจไม่อยู่กับคุณ";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "บางครั้งมันก็เหงา แต่ก็ไม่ได้แย่ขนาดนั้น อย่างน้อยฉันก็ได้ทำในสิ่งที่ต้องการทำ และทำในแบบของฉันเอง";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "เอาล่ะ ตอนนี้ฉันบอกคุณได้แค่นี้แหละ การเป็นนักฆ่าดูน่าหดหู่ไหม";
+			mes "คุณรู้สึกแบบนั้นหรือเปล่า";
+			close;
+		case 3:
+			mes "[Assassin 'Khai']";
+			mes "...อืม";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "ถูกต้อง นั่นคือจิตวิญญาณ อย่าให้ใครดูถูกคุณอีกเลย พวกเราเป็นนักฆ่า...";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "ฉันขอโทษที่หัวเราะเยาะคุณเมื่อก่อน ฉันอยากให้คุณจำไว้ว่าต้องรักษาความภาคภูมิใจและศักดิ์ศรีในฐานะนักฆ่าเอาไว้";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "พร้อมกับรักษาความภาคภูมิใจของคุณไว้";
+			mes "ฉันอยากให้คุณเคารพเลือดที่อาจทำให้ Katar หรือ Dagger ของคุณเปื้อน";
+			next;
+			if (select("...เข้าใจแล้ว.:...ฉันสับสน.") == 1) {
+				mes "[Assassin 'Khai']";
+				mes "ใช่แล้ว ฉันไว้ใจคุณได้แล้ว ฉันจะให้คำแนะนำสำคัญๆ แก่คุณบ้าง";
+				next;
+				switch(rand(1,3)) {
+				case 1:
+					mes "[Assassin 'Khai']";
+					mes "ก่อนอื่นเลย Grimtooth คือ ... ทักษะสำหรับ Katar โดยเฉพาะ ดังนั้นจึงไม่จำเป็นต้องใช้ทักษะใดๆ ที่เกี่ยวข้องกับอาวุธ Dagger";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "โจมตีสองครั้ง ...คุณไม่เคยลองเหรอ? มันช่วยให้คุณโจมตีศัตรูได้สองครั้งในคราวเดียว";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "Red Blood เป็นหินธาตุ อัญมณีสีน้ำเงินไม่จำเป็นต้องทำหน้าที่เป็นนักฆ่าเลย!";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "คุณเคยเห็นนักเวทย์ล่า Elder willow โดยใช้ทักษะ Cold Bolt ไหม? น้ำมีอำนาจเหนือไฟ น้ำควบคุมไฟ และลมควบคุมน้ำ";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "ตราบใดที่คุณอยู่ใกล้เงา ใกล้กำแพง และอะไรทำนองนั้น การปกปิดจะช่วยซ่อนคุณจากสายตาได้อย่างสมบูรณ์แบบ! เว้นแต่ว่าไอ้สารเลวนั่นจะใช้ทักษะการตรวจจับบางอย่าง คุณก็รู้";
+					next;
+					break;
+				case 2:
+					mes "[Assassin 'Khai']";
+					mes "'Sharpened Legbone of Ghoul' มีคุณสมบัติ Undead";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "คุณใช้อาวุธประเภทไหนมาบ้าง? Damascus? Gladius? Stiletto? หรือ Main Gauche? อาวุธที่คุณพกอยู่ตอนนี้คืออะไร?";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "เป็นไปได้ที่จะได้รับ Katar แบบมีช่องใส่จาก Desert Wolf แต่โปรดจำไว้ คุณจะต้องการข้อมูลนี้สักวันหนึ่ง";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "คุณสามารถได้รับ Jur แบบมีช่องใส่จากเพื่อนที่อาศัยอยู่ในที่มืดและชื้นใต้ดิน ฉันไม่รู้เลยว่าทำไมไอ้นั่นถึงมีอาวุธนั้น... บางทีมันอาจจำเป็นต้องใช้มันในการขุดหลุมก็ได้?";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "และ..."; mes "ฉันอยากเลี้ยงกบเป็นสัตว์เลี้ยงมาตลอด แต่มันเป็นไปไม่ได้!";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "เท่าที่ฉันรู้ ก๊อบลินที่ถือค้อนจะมีคุณสมบัติดิน โปรดจำไว้ว่าไฟเอาชนะคุณสมบัติดินได้";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "คุณรู้จักอาวุธธาตุไหม? ชื่อของช่างตีเหล็กมักจะสลักอยู่บนอาวุธเหล่านั้น...";
+					next;
+					break;
+				case 3:
+					mes "[Assassin 'Khai']";
+					mes "ขายการ์ด Elder Willow ให้กับเมจโดยเร็วที่สุด พวกเขาคลั่งไคล้การ์ดใบนี้ด้วยเหตุผลบางอย่าง มันไม่เพิ่ม INT ของตัวละครเหรอ ฮึม...";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "สำหรับเรา การหลบหลีกและโจมตีสำคัญกว่าการป้องกัน อย่าคิดที่จะสวมหมวกเด็ดขาด มันหนัก ไม่สบายตัว และบังสายตาด้วยซ้ำ";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "'เพิ่มการหลบหลีก' ช่วยให้คุณมีอัตราการหลบหนี +3% ต่อเลเวลทักษะ";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "อย่างที่ฉันบอกคุณซ้ำแล้วซ้ำเล่า: อาวุธคลาส Katar (Jamadhar/Jur/Katar เป็นต้น) เป็นแบบสองมือ!";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "เมืองแห่งทะเลทราย... ฉันคิดถึงบ้านเกิดของฉัน โมร็อกโก ฉันไม่ได้ไปที่นั่นมาเป็นเวลานานแล้ว รู้สึกเหมือนว่าฉันได้กลายเป็นโจรเมื่อไม่กี่วันก่อน เวลาผ่านไปเร็วมาก...";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "เฮ้ ฉันจำภารกิจของโจรได้ ฉันประหม่ามากเมื่อฉันบุกเข้าไปในฟาร์มเพื่อหาเห็ด...";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "แมลงตรวจจับทักษะการซ่อนตัว/ปกปิด พวกมันไม่เคยพลาดที่จะค้นหาเป้าหมาย";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "ฉันเคยได้ยินมาว่าการ์ด Baphomet Jr. เพิ่ม +3 คะแนนให้กับความคล่องแคล่วและ +1 คะแนนให้กับการโจมตีคริติคอล...";
+					next;
+					mes "[Assassin 'Khai']";
+					mes "ใช่แล้ว พวกเราพวกนักฆ่าเชี่ยวชาญในการฝึกฝนความคล่องแคล่ว เราสามารถได้รับโบนัส 10 คะแนนความคล่องแคล่วก่อนที่จะถึงระดับอาชีพ ปัญหาคือมันจะไม่เพิ่มขึ้นอีกหลังจากนั้นนะรู้ไหม";
+					next;
+				}
+				mes "[Assassin 'Khai']";
+				mes "^666666*Phew*^000000 นั่นคือทั้งหมดที่ฉันบอกคุณได้ แม้ว่ามันจะเป็นคำใบ้มากมาย ฉันไม่สงสัยเลยว่าฉันบอกคุณเกือบทุกอย่างแล้ว";
+				next;
+				mes "[Assassin 'Khai']";
+				mes "เอาล่ะ ไปขอทำแบบทดสอบกับ 'The Anonymous' อีกครั้งสิ";
+				close2;
+				warp "in_moc_16",19,144;
+				end;
+			}
+			mes "[Assassin 'Khai']";
+			mes "^666666*ถอนหายใจ...*^000000";
+			mes "ทำไมคุณถึงไม่เข้าใจแนวคิดเรื่องศักดิ์ศรี คุณเพิ่งแสดงมันให้ฉันดูเมื่อกี้!";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "อ๋อ ฉันเข้าใจแล้ว มันไม่ใช่ความภาคภูมิใจที่คุณแสดงออกมา คุณแค่ทำตัวน่ารำคาญ!";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "กรี๊ด...";
+			mes "พอร์ทัล WARP!";
+			close2;
+			warp "c_tower4",64,76;
+			end;
+		}
+	}
+	else {
+		mes "[Assassin 'Khai']";
+		mes "โอ้ คุณคงเป็นผู้ฝึกหัดนักฆ่าสินะ คุณมาที่นี่เพื่อที่จะเป็น";
+		mes "นักฆ่าไม่ใช่เหรอ?";
+		next;
+		if (select("ใช่แล้ว. :...ไม่ ฉันไม่") == 1) {
+			mes "[Assassin 'Khai']";
+			mes "โอเค ดีเลย กรอกใบสมัครได้เลย กรุณาลงชื่อและระบุระดับงานด้วย";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "มาดูกัน";
+			mes "ชื่อของคุณคือ";
+			mes "" + strcharinfo(0) + "...";
+			mes "Job level " + JobLevel + "...";
+			next;
+			if (JobLevel > 48) {
+				mes "[Assassin 'Khai']";
+				mes "เดี๋ยวนะ Job level " + JobLevel + "?! ฉันเห็นว่าเธอฝึกหนักมากเลยนะ เจ้านายฉันคงชอบ~";
+				next;
+				mes "[Assassin 'Khai']";
+				mes "เธอกรอกแบบฟอร์มเสร็จแล้วเหรอ เอาล่ะ กรอกมาให้ฉันหน่อยสิ ให้ฉันรอสักครู่แล้วฉันจะพาเธอไปที่ห้องทดสอบ";
+				next;
+				mes "[Assassin 'Khai']";
+				mes "เอาล่ะ ขอให้โชคดีนะ!";
+				close2;
+				if (ASSIN_Q3 < 3)
+					ASSIN_Q3 = 1;
+				ASSIN_Q = 1;
+				changequest 8001,8002;
+				warp "in_moc_16",19,144;
+				end;
+			}
+			else if (JobLevel < 49) {
+				mes "[Assassin 'Khai']";
+				mes "เอาล่ะ คุณผ่านเกณฑ์แล้ว";
+				mes "ไม่เลวเลย";
+				next;
+				mes "[Assassin 'Khai']";
+				mes "เมื่อคุณกรอกแบบฟอร์มเสร็จแล้วก็ส่งแบบฟอร์มมาให้ฉันได้เลย";
+				mes "โอเค ขอบคุณ";
+				next;
+				mes "[Assassin 'Khai']";
+				mes "ฉันจะพาคุณไปที่ห้องทดสอบ";
+				mes "ขอให้โชคดีนะ~";
+				close2;
+				if (ASSIN_Q3 < 3)
+					ASSIN_Q3 = 2;
+				ASSIN_Q = 1;
+				changequest 8001,8002;
+				warp "in_moc_16",19,144;
+				end;
+			}
+			else {
+				mes "[Assassin 'Khai']";
+				mes "แกเป็นใครวะ?";
+				mes "...ทหารยาม!";
+				close2;
+				warp "moc_fild16",206,229;
+				end;
+			}
+		}
+		else {
+			mes "[Assassin 'Khai']";
+			mes "ฮะ...?";
+			mes "อะไรนะ คุณกำลังพยายามหลอกฉันหรืออะไรอยู่ คุณไม่อยากเป็นนักฆ่าเหรอ?";
+			next;
+			if (select("ไม่:ใช่ ฉันต้องการที่จะเป็นนักฆ่า") == 1) {
+				mes "[Assassin 'Khai']";
+				mes "เอ่อ ออกไปจากที่นี่เถอะ";
+				mes "อย่ามาทำให้ฉันเสียเวลาอีก...";
+				close2;
+				ASSIN_Q = 0;
+				ASSIN_Q2 = 0;
+				erasequest 8001;
+				warp "moc_fild16",206,229;
+				end;
+			}
+			mes "[Assassin 'Khai']";
+			mes "...";
+			mes "นี่มันอะไรกันเนี่ย?";
+			mes "โอเค งั้นก็";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "กรอกใบสมัครโดยระบุชื่อและระดับตำแหน่งของคุณ";
+			next;
+			mes "[Assassin 'Khai']";
+			mes "" + strcharinfo(0) + "?";
+			mes "นั่นคือชื่อของคุณเหรอ?";
+			mes "ฟังดูตลกดีนะ";
+			mes "มาดูกัน... Job Level " + JobLevel + "...";
+			next;
+			if (JobLevel > 48) {
+				mes "[Assassin 'Khai']";
+				mes "โอ้? Job Level " + JobLevel + "?! เธอต้องฝึกหนักมากแน่ๆ บอสต้องชอบแน่ๆ...";
+				next;
+				mes "[Assassin 'Khai']";
+				mes "เธอกรอกแบบฟอร์มเสร็จหรือยัง? โอเค ส่งมาให้ฉัน ฉันจะได้ส่งเธอไปที่ห้องทดสอบ ขอให้โชคดี~";
+				next;
+				if (ASSIN_Q3 < 3)
+					ASSIN_Q3 = 1;
+				ASSIN_Q = 1;
+				changequest 8001,8002;
+				warp "in_moc_16",19,144;
+				end;
+			}
+			else if (JobLevel < 49) {
+				mes "[Assassin 'Khai']";
+				mes "ไม่เลวเลย คุณทำตามข้อกำหนดของเราแล้ว ไม่เลวเลย ตอนนี้คุณกรอกแบบฟอร์มเสร็จหรือยัง";
+				next;
+				mes "[Assassin 'Khai']";
+				mes "งั้นก็ส่งแบบฟอร์มมาให้ฉัน ฉันจะได้ส่งคุณไปที่ห้องทดสอบได้";
+				mes "โชคดีนะ...";
+				next;
+				if (ASSIN_Q3 < 3)
+					ASSIN_Q3 = 2;
+				ASSIN_Q = 1;
+				changequest 8001,8002;
+				warp "in_moc_16",19,144;
+				end;
+			}
+			else {
+				mes "[Assassin 'Khai']";
+				mes "คุณเข้ามาที่นี่ได้ยังไงวะเนี่ย?";
+				mes "ออกไปซะ!";
+				close2;
+				warp "moc_fild16",206,229;
+				end;
+			}
+		}
+	}
+}
+
+in_moc_16,19,154,0	script	nameless_one	-1,8,2,{
+OnTouch_:
+	if (ASSIN_Q2 < 5) {
+		if (ASSIN_Q2 < 3) {
+			mes "[The Anonymous One]";
+			mes "ยินดีต้อนรับ แขก";
+			mes "มวาฮ่าฮ่า ไร้ประโยชน์ที่จะพยายามหาหรือพบฉัน...";
+			next;
+			mes "[The Anonymous One]";
+			mes "ฉันซ่อนตัวได้อย่างสมบูรณ์แบบ!";
+			mes "การที่ไม่มีใครรู้เห็นสามารถทำได้โดยนักฆ่าที่เก่งกาจที่สุดเท่านั้น!";
+			next;
+			mes "[The Anonymous One]";
+			mes "คุณไม่กลัวเหรอว่าจะมองไม่เห็นฉัน? ฉันสามารถฆ่าคุณเมื่อไหร่ก็ได้ และมันง่ายมาก...";
+			next;
+			if (select("ฉันคิดว่าฉันขี้ราดกางเกง!:คุณพูดมาก ฉันท้าคุณ!") == 1) {
+				mes "[The Anonymous One]";
+				mes "ตอนนี้ฉันรู้แล้วว่าคุณเป็นเพียงคนขี้ขลาด";
+				next;
+				mes "[The Anonymous One]";
+				mes "บวาฮ่าฮ่าฮ่าฮ่า!";
+				mes "หยุดขยาดด้วยความกลัวได้แล้ว!";
+				mes "มันทำให้ฉันหัวเราะ!";
+				close;
+			}
+			mes "[The Anonymous One]";
+			mes "แล้ว...";
+			mes "คุณต้องการความท้าทายใช่ไหม";
+			mes "จากฉันเหรอ!";
+			next;
+			mes "[The Anonymous One]";
+			mes "สายเลือดไหลตามทุกฝีก้าวของฉัน ฉันไร้ชื่อ เพราะคมดาบของฉันเป็นสิ่งเดียวที่ทุกคนต้องการรู้";
+			next;
+			mes "[The Anonymous One]";
+			mes "ฉันมาที่นี่เพื่อทดสอบความรู้ของคุณ รวมถึงความสามารถในการไร้หัวใจของคุณ ทั้งสองสิ่งนี้จำเป็นต่อการเป็นนักฆ่า";
+			next;
+			mes "[The Anonymous One]";
+			mes "สำหรับความท้าทายของคุณ คุณต้องตอบคำถามของฉันให้ถูกต้อง คำถามยากมากที่นักฆ่าเท่านั้นที่จะตอบได้";
+			next;
+			mes "[The Anonymous One]";
+			mes "ถึงแม้ว่าฉันจะไร้หัวใจ";
+			mes "ฉันไม่ได้โหดร้าย ก่อนที่เราจะดำเนินการต่อ มีอะไรที่คุณอยากรู้ไหม";
+			next;
+			ASSIN_Q2 = 0;
+			while(ASSIN_Q2 < 3) {
+				switch(select("...ทักษะ?:...สถิติ?: หืม ฉันรู้หมดเลย")) {
+				case 1:
+					mes "[The Anonymous One]";
+					mes "ทักษะ...?";
+					mes "แม้ว่าทักษะอาจมีการประยุกต์ใช้ตามสถานการณ์ แต่ฉันจะบอกคุณเกี่ยวกับแนวคิดพื้นฐาน";
+					next;
+					mes "[The Anonymous One]";
+					mes "ก่อนอื่นเลย ^3355FFKatar Mastery^000000 ทักษะนี้จะเพิ่มความเสียหายของอาวุธคลาส Katar ยิ่งระดับทักษะสูงขึ้น ความเสียหายก็จะยิ่งเพิ่มขึ้น";
+					next;
+					mes "[The Anonymous One]";
+					mes "^3355FFLeft Hand Mastery^000000 และ ^3355FFRight Hand Mastery^000000 นักฆ่าสามารถสวมอาวุธที่แตกต่างกันในแต่ละมือได้เมื่อใช้อาวุธคลาส Dagger";
+					next;
+					mes "[The Anonymous One]";
+					mes "แต่เห็นได้ชัดว่าการใช้อาวุธ 2 ชิ้นในเวลาเดียวกันนั้นยากกว่าการใช้เพียงชิ้นเดียว ทักษะ Left Hand Mastery และ Right Hand Mastery จะเพิ่มความเสียหายเมื่อใช้ Dagger สองอัน";
+					next;
+					mes "[The Anonymous One]";
+					mes "อย่างไรก็ตาม หากคุณไม่ต้องการใช้มีดสั้นสองเล่ม คุณจะไม่จำเป็นต้องใช้ทักษะนี้ คุณจะเห็นว่า 'Left Hand Mastery' ทำงานอย่างไรทันทีที่คุณถึง 'Right Hand Mastery' ระดับ 2";
+					next;
+					mes "[The Anonymous One]";
+					mes "^3355FFSonic Blow^000000 ช่วยให้คุณโจมตีศัตรูได้ 8 ครั้งในคราวเดียว ทักษะนี้ใช้ได้กับอาวุธ Katar เท่านั้น เนื่องจากความเร็วที่ต้องการ";
+					next;
+					mes "[The Anonymous One]";
+					mes "แน่นอนว่าความเสียหายนั้นได้รับผลกระทบจาก STR และความเสียหายจากอาวุธ คุณจะเข้าใจว่าทักษะนี้ทำงานอย่างไรเมื่อคุณถึงระดับ 4 Katar Mastery";
+					next;
+					mes "[The Anonymous One]";
+					mes "^3355FFGrimtooth^000000 ช่วยให้คุณโจมตีศัตรูได้ในขณะที่ซ่อนตัวอยู่ใต้ดิน เมื่อคุณเชี่ยวชาญแล้ว คุณจะสามารถโจมตีศัตรูจากระยะไกลได้";
+					next;
+					mes "[The Anonymous One]";
+					mes "เนื่องจากเป็นการโจมตีระยะไกล จึงมีประโยชน์มากเมื่อคุณถูกศัตรูล้อมรอบ";
+					next;
+					mes "[The Anonymous One]";
+					mes "เนื่องจากคุณต้องซ่อนตัวอย่างสมบูรณ์แบบเพื่อใช้ทักษะนี้ คุณต้องเรียนรู้การปกปิดระดับ 2 ก่อนจึงจะเรียนรู้ Grimtooth ได้";
+					next;
+					mes "[The Anonymous One]";
+					mes "หากต้องการเรียนรู้ ^3355FFCloaking^000000 คุณต้องเรียนรู้การซ่อนตัวระดับ 2 จากนั้นคุณจะสามารถเคลื่อนที่ได้ในขณะที่ซ่อนตัวหากคุณอยู่ใกล้กำแพง";
+					next;
+					mes "[The Anonymous One]";
+					mes "ทักษะ ^3355FFEnchant Poison^000000 ช่วยให้คุณเสกคาถาพิษบนอาวุธที่คุณกำลังใช้ ซึ่งจะทำให้อาวุธนั้นได้รับคุณสมบัติพิษชั่วคราว";
+					next;
+					mes "[The Anonymous One]";
+					mes "นอกจากนี้ การโจมตีของคุณยังทำให้ศัตรูติดพิษโดยบังเอิญอีกด้วย คุณสามารถใช้ทักษะนี้เพื่อเสกคาถาอาวุธของสมาชิกปาร์ตี้ของคุณได้อีกด้วย...";
+					next;
+					mes "[The Anonymous One]";
+					mes "^3355FFPoison React^000000 ปกป้องผู้ใช้จากการโจมตีด้วยคุณสมบัติพิษ และสามารถใช้กับผู้อื่นได้เช่นกัน อย่างไรก็ตาม คุณต้องเรียนรู้การเสกคาถาพิษระดับ 3 ก่อน";
+					next;
+					mes "[The Anonymous One]";
+					mes "^3355FFVenom Dust^000000 ใช้ Red Gemstone เพื่อปนเปื้อนพิษในพื้นที่ ระยะเวลาของการปนเปื้อนจะเพิ่มขึ้นตามระดับของทักษะนี้";
+					next;
+					mes "[The Anonymous One]";
+					mes "คุณสามารถเรียนรู้ทักษะ Venom Dust ได้หลังจากเรียนรู้ Enchant Poison เลเวล 5";
+					next;
+					mes "[The Anonymous One]";
+					mes "^3355FFVenom Splasher^000000 เป็นทักษะที่เมื่อใช้กับเป้าหมายแล้ว จะทำให้เป้าหมายระเบิดเมื่อ HP เหลือต่ำกว่าจำนวนหนึ่งหลังจากสามวินาที";
+					next;
+					mes "[The Anonymous One]";
+					mes "เมื่อเป้าหมายระเบิด ศัตรูในบริเวณใกล้เคียงก็จะได้รับความเสียหายด้วย นี่เป็นทักษะที่จำเป็นสำหรับนักฆ่า ต้องใช้ Poison React เลเวล 5 และ Venom Dust เลเวล 5";
+					next;
+					mes "[The Anonymous One]";
+					mes "ตอนนี้...";
+					mes "นั่นคือทั้งหมดที่ฉันจะบอกคุณเกี่ยวกับทักษะของนักฆ่า";
+					ASSIN_Q2 = 1;
+					next;
+					break;
+				case 2:
+					mes "[The Anonymous One]";
+					mes "Hmm, Stats...";
+					mes "สำหรับนักฆ่า ความคล่องแคล่ว หรือ AGI ถือเป็นค่าสถิติที่สำคัญที่สุด";
+					next;
+					mes "[The Anonymous One]";
+					mes "เพื่อการลอบสังหาร STR อาจเป็นค่าสถิติที่สำคัญที่สุดเป็นอันดับสอง แต่เป็นเพียงคำแนะนำของฉันเท่านั้น";
+					next;
+					mes "[The Anonymous One]";
+					mes "ฉันไม่สามารถให้คำแนะนำที่ดีไปกว่านี้เกี่ยวกับค่าสถิติได้อีกแล้ว คุณควรค้นคว้าและดูว่าค่าสถิติไหนเหมาะกับคุณ จากนั้นจึงตัดสินใจว่าคุณอยากเป็นนักฆ่าแบบไหน";
+					ASSIN_Q2 = 2;
+					next;
+					break;
+				case 3:
+					if (ASSIN_Q2 == 0) {
+						mes "[The Anonymous One]";
+						mes "คุณรู้ทุกอย่างใช่ไหม!";
+						mes "ฉันจะเป็นคนตัดสินเรื่องนั้น!";
+						next;
+					}
+					ASSIN_Q2 = 3;
+					break;
+				}
+			}
+			mes "[The Anonymous One]";
+			mes "เอาล่ะ ถึงเวลาทดสอบความรู้ของคุณแล้ว คุณไม่มีสิทธิ์พลาดคำถามเกินหนึ่งข้อ";
+			next;
+			mes "[The Anonymous One]";
+			mes "พูดอีกอย่างก็คือ หากคุณต้องการผ่านการทดสอบนี้ คุณต้องตอบคำถามให้ถูกต้อง 9 ข้อจากทั้งหมด 10 ข้อ ฉันจะไม่บอกคุณว่าคำตอบไหนที่คุณตอบผิด...";
+			next;
+			mes "[The Anonymous One]";
+			mes "คุณพร้อมหรือยัง";
+			mes "เตรียมตัวให้พร้อม!";
+		}
+		else if (ASSIN_Q2 < 5) {
+			mes "[The Anonymous One]";
+			mes "มีปัญหาในการผ่านการทดสอบง่ายๆ หรือเปล่า";
+			mes "คุณควรจะรู้ดีกว่านี้";
+			next;
+			if (select("ช่วยฉันด้วย ฉันจะผ่านได้อย่างไร:ฉันขอท้าคุณอีกครั้ง!") == 1) {
+				mes "[The Anonymous One]";
+				mes "นั่นเป็นคำถามที่ดีมากเลย แต่คุณถูกเนรเทศออกจากกิลด์นักฆ่า ดังนั้นเรื่องนี้ก็ไม่ใช่เรื่องที่ฉันจะต้องกังวล...";
+				close2;
+				warp "moc_fild16",206,151;
+				end;
+			}
+			mes "[The Anonymous One]";
+			mes "ดังนั้นฉันก็เห็น...";
+			mes "ไปได้แล้ว แต่ไม่ต้องกลัว ฉันจะอยู่เคียงข้างคุณในขณะที่คุณรู้ผลลัพธ์ของทางเลือกของคุณ...";
+			next;
+			mes "[The Anonymous One]";
+			mes "ตอนนี้ เราจะทดสอบคุณอีกครั้ง! โปรดจำไว้ว่า คุณต้องตอบคำถามให้ถูก 9 ข้อจาก 10 ข้อ จำไว้ว่าฉันกำลังช่วยคุณอยู่...";
+			next;
+			mes "[The Anonymous One]";
+			mes "คุณต้องตอบคำถามให้ถูก 9 ข้อจาก 10 ข้อ หากคุณตอบผิดมากกว่า 1 ข้อ คุณจะไม่สามารถเป็นนักฆ่าได้";
+			next;
+			mes "[The Anonymous One]";
+			mes "โอเค คุณพร้อมหรือยัง";
+			mes "โชคดีนะ";
+		}
+		next;
+		switch(rand(1,3)) {
+		case 1:
+			mes "[The Anonymous One]";
+			mes "1. เลือกทักษะที่ไม่จำเป็นสำหรับการเรียนรู้ Grimtooth";
+			next;
+			if (select("Cloaking level 2:Sonic Blow level 5:Katar Mastery level 4:Right hand Mastery level 2") == 4)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "2. Enchant Poison มีคุณสมบัติอะไรบ้าง?";
+			next;
+			if (select("Poison:Earth:Fire:Wind") == 1)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "3. ความชำนาญมือขวาระดับ 4 ทำงานอย่างไร";
+			next;
+			if (select("ฟื้นฟู 80% ของความเสียหายที่ลดลง: ฟื้นฟู 90% ของความเสียหายที่ลดลง: เพิ่ม 90% ของความเสียหาย: เพิ่ม 108% ของความเสียหาย") == 2)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "4. ต้องใช้ไอเทมอะไรในการใช้ Venom Dust?";
+			next;
+			if (select("Red Blood:Blue Gemstone:Yellow Gemstone:Red Gemstone") == 4)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "5. คุณสามารถเรียนรู้ทักษะใดได้เมื่อคุณถึงระดับ 5 Enchant Poison?";
+			next;
+			if (select("Envenom:Sonic Blow:Venom Splasher:Venom Dust") == 4)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "6. ทักษะใดต่อไปนี้ที่ทำให้คุณเดินได้ขณะที่ล่องหน?";
+			next;
+			if (select("Hiding:Back Slide:Cloaking:Sand Attack") == 3)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "7. เลือกเงื่อนไขที่ไม่เกี่ยวข้องกับ Venom Splasher.";
+			next;
+			if (select("เป้าหมายที่ติดพิษ :Red Gemstone:HP ที่เหลืออยู่ของเป้าหมาย") == 2)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "8. มอนสเตอร์ตัวใดที่อ่อนแอต่ออาวุธที่มีการ์ดวาดอน (เพิ่มความเสียหาย 20% ให้กับมอนสเตอร์ธาตุไฟ)?";
+			next;
+			if (select("Steel Chonchon:Deviruchi:Elder Willow:Baphomet") == 3)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "9. Double Attack ต้องใช้ SP เท่าไหร่?";
+			next;
+			if (select("15:เป็นทักษะติดตัว ดังนั้นการใช้ SP จึงเป็น 0:เป็นทักษะติดตัว ดังนั้นการใช้ SP คือ 10.:54") == 2)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "10. อาวุธ Main Gauche ธาตุใดดีที่สุดสำหรับการล่าในดันเจี้ยน Izlude?";
+			next;
+			if (select("Wind Main Gauche:Ice Main Gauche:Earth Main Gauche:Fire Main Gauche") == 1)
+				.@assassin_t += 10;
+			break;
+		case 2:
+			mes "[The Anonymous One]";
+			mes "1. มอนสเตอร์ตัวใดที่ดรอป Katar[1]?";
+			next;
+			if (select("Thief Bug:Peco Peco:Desert Wolf:Hammer Cobolt") == 3)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "2. มอนสเตอร์ตัวใดที่ดรอป Jur[1]?";
+			next;
+			if (select("Martin:Desert Wolf:Marionette:Myst") == 1)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "3. คลาสใดได้รับอนุญาตให้ประดิษฐ์อาวุธธาตุ?";
+			next;
+			if (select("Merchant:Blacksmith:Thief:Priest") == 2)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "4. เลือกอาวุธที่ไม่อยู่ในคลาส Katar";
+			next;
+			if (select("Jamadhar:Jur:Katar:Gladius") == 4)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "5. มอนสเตอร์ดันเจี้ยน Izlude มีคุณสมบัติอะไรบ้าง?";
+			next;
+			if (select("Water:Fire:Wind:Earth") == 1)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "6. มอนสเตอร์ตัวใดที่ไม่สามารถเป็นสัตว์เลี้ยงน่ารักได้?";
+			next;
+			if (select("Poporing:Roda Frog:Smokie:Poison Spore") == 2)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "7. เลือกมอนสเตอร์ที่ Daggers ธาตุไฟใช้งานได้ดีที่สุด";
+			next;
+			if (select("Dagger Goblin:Mace Goblin:Morning Star Goblin:Hammer Goblin") == 4)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "8. เลือก Katar ที่ไม่มีธาตุจากรายการต่อไปนี้:";
+			next;
+			if (select("Katar of Raging Blaze:Katar of Dusty Thornbush:Sharpened Legbone of Ghoul:Infiltrator") == 4)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "9. มอนสเตอร์ที่ไม่ธรรมดาคือตัวไหน?";
+			next;
+			if (select("Poring:Mastering:Ghostring:Spore") == 3)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "10. เลือกมอนสเตอร์ที่ไม่ใช่ Undead";
+			next;
+			if (select("Drake:Megalodon:Spore:Khalitzburg") == 3)
+				.@assassin_t += 10;
+			break;
+		case 3:
+			mes "[The Anonymous One]";
+			mes "1. เลือกจำนวนการเพิ่มอัตราการหลบหลีกสูงสุดที่ถูกต้องจากทักษะ 'Increase Dodge' เมื่ออยู่ที่เลเวล 10";
+			next;
+			if (select("30:40:160:20") == 1)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "2. เลือกมอนสเตอร์ที่จะตรวจจับการซ่อน/การปิดบังโจรและนักฆ่า";
+			next;
+			if (select("Worm Tail:Andre:Mummy:Soldier Skeleton") == 2)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "3. เลือกกลุ่มอาวุธที่นักฆ่าไม่สามารถใช้ได้ในครั้งเดียว";
+			next;
+			if (select("Main Gaughe + Gladius:Stiletto + Main Gauche:Katar + Maingauche:Hammer + Stiletto") == 3)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "4. เลือกเมืองที่พวกโจรสามารถเปลี่ยนอาชีพได้";
+			next;
+			if (select("Prontera:Lutie:Alberta:Morocc") == 4)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "5. เลือกการ์ดที่ไม่ส่งผลต่อค่า AGI";
+			next;
+			if (select("Baphomet Jr. card:Whisper Card:Female Thiefbug card:Male Thiefbug card") == 2)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "6. เลือกความเชี่ยวชาญที่ถูกต้องของคลาสนักฆ่า";
+			next;
+			if (select("ความสามารถด้านการร้องเพลงดีเยี่ยม : ความสามารถด้านการอ่านหนังสือดีเยี่ยม : ความสามารถด้านการเต้นดีเยี่ยม : ทักษะการหลบหลีกดีเยี่ยม") == 4)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "7. เลือกโบนัส AGI สูงสุดที่นักฆ่าจะได้รับได้ที่ Job Level 50";
+			next;
+			if (select("7:8:9:10") == 4)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "8. เลือกไอเทมที่นักฆ่าไม่สามารถสวมใส่ได้";
+			next;
+			if (select("Dagger:Helm:Boots:Brooch") == 2)
+				.@assassin_t += 10;
+			mes "[The Anonymous One]";
+			mes "9. เลือกรายการเปลี่ยนอาชีพสำหรับ Thief";
+			next;
+			switch(select("Orange Gooey Mushroom:Red Gooey Mushroom:Orange Net Mushroom:Orange Hair Mushroom")) {
+			case 1:
+			case 3:
+				.@assassin_t += 10;
+				break;
+			default:
+				break;
+			}
+			mes "[The Anonymous One]";
+			mes "10. เลือกการ์ดที่โดยทั่วไปแล้วน่าจะให้ประโยชน์กับนักฆ่าน้อยที่สุด";
+			next;
+			if (select("Whisper card:Elder Willow card:Soldier Skeleton card:Cobold card") == 2)
+				.@assassin_t += 10;
+			break;
+		}
+		if (ASSIN_Q2 == 3) {
+			next;
+			mes "[The Anonymous One]";
+			mes "Hmpf.";
+			mes "ไม่ทราบว่าคุณแสดงให้ฉันเห็นถึงความพยายามอันยิ่งใหญ่ได้อย่างไร";
+			next;
+			mes "[The Anonymous One]";
+			mes "มาดูกัน...";
+			mes "คุณทำคะแนนได้";
+			mes "" + .@assassin_t + " เปอร์เซ็นต์...";
+			if (.@assassin_t > 80) {
+				ASSIN_Q2 = 5;
+				changequest 8002,8003;
+				mes "ทำได้ดี";
+				mes "คุณผ่าน";
+				next;
+				mes "[The Anonymous One]";
+				mes "อย่างไรก็ตาม การทดสอบอีกครั้งกำลังรอคุณอยู่ เมื่อคุณเข้าไปในพื้นที่ถัดไป คุณจะได้รับคำแนะนำ...";
+				close;
+			}
+			else {
+				ASSIN_Q2 = 4;
+				mes "นั่นหมายความว่าคุณล้มเหลว!";
+				next;
+				mes "[The Anonymous One]";
+				mes "คุณคาดหวังให้เป็นนักฆ่าได้อย่างไรด้วยคะแนนเท่านี้ ฝึกฝนต่อไปแล้วกลับมาเมื่อคุณพร้อม";
+				next;
+				mes "[The Anonymous One]";
+				mes "ฉันอยากขอคำแนะนำจาก 'Khai' คนที่ดำเนินการใบสมัครของคุณ";
+				next;
+				mes "[The Anonymous One]";
+				mes "คุณสามารถใช้รหัสนี้ได้เช่นกัน: ^880000iro.ragnarokonline.com^000000 ไม่ทราบว่าทำไมคำเหล่านั้นจึงเชื่อมโยงกับองค์ความรู้อันกว้างใหญ่ไพศาลจากต่างโลก...";
+				close2;
+				warp "in_moc_16",19,76;
+				end;
+			}
+		}
+		else if (ASSIN_Q2 == 4) {
+			next;
+			mes "[The Anonymous One]";
+			mes "คุณแสดงความพยายามอย่างยิ่งใหญ่...";
+			next;
+			mes "[The Anonymous One]";
+			mes "มาดูกัน...";
+			mes "คุณทำคะแนนได้";
+			mes "" + .@assassin_t + " คะแนน...";
+			if (.@assassin_t > 80) {
+				ASSIN_Q2 = 5;
+				changequest 8002,8003;
+				next;
+				mes "[The Anonymous One]";
+				mes "คุณไม่ได้ล้มเหลวในครั้งนี้! แต่คุณยังไม่จบเพียงเท่านี้ คุณมีการทดสอบอื่นรออยู่ข้างหน้า เมื่อคุณดำเนินการต่อไป คุณจะได้รับแจ้งเกี่ยวกับการทดสอบครั้งต่อไป";
+				close;
+			}
+			else {
+				ASSIN_Q2 = 4;
+				mes "แกสอบตกแล้ว!";
+				next;
+				mes "[The Anonymous One]";
+				mes "แกไม่มีคุณสมบัติพอเลย แกคิดจะมาเป็นนักฆ่าได้ยังไง!";
+				next;
+				mes "[The Anonymous One]";
+				mes "ฉันแปลกใจที่แกสามารถเป็นโจรได้ แกกลับไปซะแล้วกลับมาใหม่ก็ต่อเมื่อแกรู้ว่ากำลังทำอะไรอยู่";
+				next;
+				mes "[The Anonymous One]";
+				mes "หึๆ ถ้าแกไม่มีลาดเลาจริงๆ ฉันก็จะช่วยแกหน่อย";
+				next;
+				mes "[The Anonymous One]";
+				mes "ไปถาม 'ไค' คนที่ดูแลใบสมัครสอบของแกสิ บางทีเขาอาจจะช่วยแกได้";
+				next;
+				mes "[The Anonymous One]";
+				mes "คุณอาจต้องการใช้ประโยชน์จากรหัสโบราณ ^3355FFiro.ragnarokonline.com^000000 เช่นกัน เชื่อกันว่าคำเหล่านี้เชื่อมโยงกับความรู้จากโลกอื่นอันกว้างใหญ่...";
+				close2;
+				warp "in_moc_16",19,76;
+				end;
+			}
+		}
+	}
+	else {
+		mes "[The Anonymous One]";
+		mes "...ฉันจะคอยดูคุณต่อไป";
+		close;
+	}
+}
+
+in_moc_16,21,165,2	script	Standby Room#ASNTEST	725,{
+	end;
+
+OnInit:
+	//disablenpc "Standby Room#ASNTEST";
+	hideonnpc "Standby Room#ASNTEST";
+	waitingroom "ห้องสแตนด์บาย",10,"Standby Room#ASNTEST::OnStartArena",1;
+	enablewaitingroomevent;
+	end;
+
+OnStartArena:
+	warpwaitingpc "in_moc_16", 66, 151;
+	attachrid($@warpwaitingpc[0]);
+	if (ASSIN_Q2 < 5) {
+		warpchar "in_moc_16",20,145,getcharid(0);
+		end;
+	}
+	donpcevent "Beholder#ASNTEST::OnEnable";
+	donpcevent "Keeper of the Door#ASN::OnDisable";
+	set getvariableofnpc(.DisableTraps,"Beholder#ASNTEST"),0;
+	disablewaitingroomevent;
+	end;
+
+OnStart:
+	enablewaitingroomevent;
+	end;
+}
+
+in_moc_16,21,165,2	script	Test Guide#ASN	725,4,4,{
+	end;
+
+OnTouch_:
+	if (ASSIN_Q2 < 5) {
+		mes "[Barcardi]";
+		mes "คุณจะเข้าร่วมการทดสอบครั้งต่อไปไม่ได้หากยังไม่ผ่านการทดสอบข้อเขียนเสียก่อน คุณควรพูดคุยกับผู้ไม่ประสงค์ออกนาม...";
+		close2;
+		warp "in_moc_16",19,76;
+		end;
+	}
+	if (ASSIN_Q == 1 && ASSIN_Q2 == 5) {
+		mes "[Barcardi]";
+		mes "" + strcharinfo(0) + "...";
+		mes "คุณผ่านการทดสอบแล้ว..?";
+		next;
+		mes "[Barcardi]";
+		mes "พูดตามตรง ฉันอยากให้คุณเปลี่ยนงานโดยไม่มีเงื่อนไขอื่นใด คนน่าสงสารมากมายไม่มีความรู้พื้นฐานในการเป็นนักฆ่าด้วยซ้ำ...";
+		next;
+		mes "[Barcardi]";
+		mes "เราต้องรักษาศักดิ์ศรีของเราในฐานะนักฆ่าและเป็นคนยิ่งใหญ่อย่างแท้จริง! น่าเสียดายที่ยังมีคนโง่ๆ มากมายที่ไม่มีความภาคภูมิใจ";
+		next;
+		mes "[Barcardi]";
+		mes "นักฆ่าทุกคนต้องเคารพศัตรูที่พวกเขาสังหาร เลือดที่พวกเขาหลั่ง และเหนือสิ่งอื่นใด ต้องรักษาศักดิ์ศรีของพวกเขาเอาไว้!";
+		next;
+		mes "[Barcardi]";
+		mes "โอเค การทดสอบครั้งต่อไปจะทดสอบความสามารถของคุณในการค้นหาเป้าหมายอย่างรวดเร็ว";
+		next;
+		mes "[Barcardi]";
+		mes "หากคุณจะทำหน้าที่เป็นนักฆ่า เราก็ต้องกำหนดก่อนว่าคุณจะสามารถแยกแยะมิตรจากศัตรูได้ในทันทีหรือไม่";
+		next;
+		mes "[Barcardi]";
+		mes "เป้าหมายหลักของการทดสอบนี้คือการค้นหาและฆ่ามอนสเตอร์ที่มีชื่อว่า ^008800Job change target^000000 ให้ได้มากที่สุด";
+		next;
+		mes "[Barcardi]";
+		mes "คุณต้องฆ่าอย่างน้อย";
+		mes "มอนสเตอร์ 6 ตัว ^008800Job change target^000000 พวกมันปะปนอยู่กับมอนสเตอร์ที่ดูคล้ายกัน ดังนั้นคุณต้องระวัง...";
+		next;
+		mes "[Barcardi]";
+		mes "หากคุณล้มเหลว คุณจะต้องเริ่มการทดสอบนี้ใหม่ ไปที่ห้องด้านบน";
+		mes "ฉันจะถูกส่งไปยังห้องทดสอบ";
+		next;
+		mes "[Barcardi]";
+		mes "อนุญาตให้ผู้เข้าสอบทำแบบทดสอบได้ครั้งละ 1 คนเท่านั้น ดังนั้นหากใครก็ตามเข้าสอบ คุณจะต้องรอจนกว่าคนนั้นจะสอบเสร็จ";
+		close;
+	}
+	else {
+		mes "[Barcardi]";
+		mes "เฮ้ อย่ากดดันตัวเองมากเกินไปนะ สู้ ๆ นะ!";
+		next;
+		mes "[Barcardi]";
+		mes "อืม ถ้าคุณเหนื่อย ฉันก็ยินดีจะพาคุณกลับ แต่ถ้าคุณออกไป คุณจะต้องสอบงานใหม่อีกครั้ง แล้วคุณอยากทำอะไรล่ะ";
+		next;
+		if (select("ดำเนินการต่อ!: ออกจากการทดสอบการเปลี่ยนงานในตอนนี้") == 1) {
+			mes "[Barcardi]";
+			mes "เลือกได้ดีมาก!";
+			mes "จำไว้ว่า คุณต้องค้นหาและฆ่า ^008800Job change target^000000 มอนสเตอร์ 6 ตัว!";
+			mes "ขอให้โชคดี!";
+			close;
+		}
+		mes "[Barcardi]";
+		mes "โอเค...";
+		mes "ฉันเดาว่าคุณคงต้องพักสักพัก...";
+		close2;
+		ASSIN_Q = 0;
+		ASSIN_Q2 = 0;
+		changequest 8003,8000;
+		warp "in_moc_16",19,13;
+		end;
+	}
+}
+
+in_moc_16,1,1,0	script	Beholder#ASNTEST	-1,{
+	end;
+
+OnEnable:
+	.MyMobs = 6;
+	// Target mobs
+	monster "in_moc_16",62,161,"Job change target",1002,1,"Beholder#ASNTEST::OnMyMobDead";
+	monster "in_moc_16",85,169,"Job change target",1063,1,"Beholder#ASNTEST::OnMyMobDead";
+	monster "in_moc_16",88,152,"Job change target",1002,1,"Beholder#ASNTEST::OnMyMobDead";
+	monster "in_moc_16",90,143,"Job change target",1113,1,"Beholder#ASNTEST::OnMyMobDead";
+	monster "in_moc_16",74,167,"Job change target",1031,1,"Beholder#ASNTEST::OnMyMobDead";
+	monster "in_moc_16",77,173,"Job change target",1002,1,"Beholder#ASNTEST::OnMyMobDead";
+	// Decoy mobs
+	monster "in_moc_16",62,161,"Job change creature",1063,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",85,169,"Job change creature",1031,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",79,174,"Job change creature",1113,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",85,156,"Job change creature",1063,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",74,171,"Job change monster",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",68,173,"Job change dummy",1113,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",65,158,"Battle test target",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",60,158,"Warrior test target",1113,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",64,169,"Job change targets",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",71,173,"Jobs change target",1063,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",77,172,"Please don't hit me",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",76,172,"Job change sample",1063,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",75,172,"Not me",1113,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",67,167,"I got yours right here",1063,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",86,170,"Job changes target",1031,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",86,171,"Job quest target",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",85,170,"Job target change",1113,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",89,171,"Hit me",1063,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",85,170,"Battle Monster",1031,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",89,156,"Bouncer",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",89,156,"Mungamorp",1113,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",89,156,"Battle test target",1063,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",89,156,"Dew of the Battle field",1113,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",89,156,"Tear of test",1031,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",83,169,"Evil Druid",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",63,158,"Doppelganger",1063,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",63,157,"Job change dummy",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",64,159,"Job ready dummy",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",63,159,"Job change ready",1063,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",63,159,"Archer test target",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",63,159,"Swordman test target",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",83,148,"Thief test target",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",82,148,"Acolyte test target",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	monster "in_moc_16",84,148,"Merchant test target",1002,1,"Beholder#ASNTEST::OnMyMobDead2";
+	initnpctimer;
+	end;
+
+OnReset:
+	killmonster "in_moc_16","Beholder#ASNTEST::OnMyMobDead";
+	killmonster "in_moc_16","Beholder#ASNTEST::OnMyMobDead2";
+	stopnpctimer;
+	donpcevent "Standby Room#ASNTEST::OnStart";
+	end;
+
+OnResetmob:
+	killmonster "in_moc_16","Beholder#ASNTEST::OnMyMobDead";
+	killmonster "in_moc_16","Beholder#ASNTEST::OnMyMobDead2";
+	stopnpctimer;
+	end;
+
+OnMyMobDead:
+	.MyMobs--;
+	if (.MyMobs < 1) {
+		mapannounce "in_moc_16","ดูเหมือนคุณจะทำได้ดีทีเดียว สู้ๆ นะ",bc_map;
+		ASSIN_Q = 3;
+		changequest 8003,8004;
+		donpcevent "timestopper#1::OnEnable";
+		donpcevent "Keeper of the Door#ASN::OnEnable";
+		donpcevent "Beholder#ASNTEST::OnResetmob";
+		.DisableTraps = 1;
+		stopnpctimer;
+	}
+	else {
+		mapannounce "in_moc_16","โอเค คุณทำได้ดีแล้ว! อดทนไว้ คุณเกือบจะเสร็จแล้ว!",bc_map;
+	}
+	end;
+
+OnMyMobDead2:
+	mapannounce "in_moc_16",strcharinfo(0) + "! คุณทำผิดแล้ว! ฉันจะพาคุณกลับมา!",bc_map;
+	ASSIN_Q = 2;
+	warp "in_moc_16",19,161;
+	donpcevent "Beholder#ASNTEST::OnReset";
+	end;
+
+OnTimer1000:
+	mapannounce "in_moc_16"," โอเค มาเริ่มการทดสอบกันเลย!",bc_map;
+	end;
+
+OnTimer2000:
+	mapannounce "in_moc_16","อย่างที่คุณเคยบอกมาก่อน ให้ค้นหาและฆ่ามอนสเตอร์ที่ชื่อ 'Job change target!'",bc_map;
+	end;
+
+OnTimer3000:
+	mapannounce "in_moc_16","จุดประสงค์ของการทดสอบนี้คือเพื่อตรวจสอบความสามารถของคุณในการแยกแยะศัตรูจากผู้อื่นได้อย่างรวดเร็ว!",bc_map;
+	end;
+
+OnTimer4000:
+	mapannounce "in_moc_16","คุณจะมีเวลาทำแบบทดสอบ 3 นาที! เราจะแจ้งให้คุณทราบทุกนาทีที่ผ่านไป",bc_map;
+	end;
+
+OnTimer5000:
+	mapannounce "in_moc_16","โอเค ตอนนี้คุณมีเวลา 3 นาทีพอดี ขยับ! เคลื่อนไหว!",bc_map;
+	end;
+
+OnTimer65000:
+	mapannounce "in_moc_16","เหลือเวลาอีก 2 นาที อย่างที่ฉันบอกไปแล้ว ให้ไปหามอนสเตอร์ 'Job change target'!",bc_map;
+	end;
+
+OnTimer125000:
+	mapannounce "in_moc_16","เหลืออีก 1 นาที",bc_map;
+	end;
+
+OnTimer180000:
+	mapannounce "in_moc_16","เหลืออีก 5 วินาที...",bc_map;
+	end;
+
+OnTimer181000:
+	mapannounce "in_moc_16","เหลืออีก 4 วินาที...",bc_map;
+	end;
+
+OnTimer182000:
+	mapannounce "in_moc_16","เหลืออีก 3 วินาที...",bc_map;
+	end;
+
+OnTimer183000:
+	mapannounce "in_moc_16","เหลืออีก 2 วินาที...",bc_map;
+	end;
+
+OnTimer184000:
+	mapannounce "in_moc_16","เหลืออีก 41วินาที...",bc_map;
+	end;
+
+OnTimer185000:
+	mapannounce "in_moc_16","หมดเวลาแล้ว!",bc_map;
+	mapannounce "in_moc_16","ทำได้ดีมาก... ถ้าคุณอยากเสียเวลา ก็ต้องลองใหม่อีกครั้ง!",bc_map;
+	//ASSIN_Q = 2;
+	end;
+
+OnTimer186000:
+	areawarp "in_moc_16",60,136,93,177,"in_moc_16",19,161;
+	end;
+
+OnTimer187000:
+	donpcevent "Beholder#ASNTEST::OnReset";
+	end;
+}
+
+in_moc_16,68,158,0	script	01_1::SinTrap	-1,0,0,{
+OnTouch_:
+	if (getvariableofnpc(.DisableTraps,"Beholder#ASNTEST")  < 1) {
+		mapannounce "in_moc_16",strcharinfo(0) + ", คุณติดกับดัก. คุณจะถูกส่งกลับ.",bc_map;
+		ASSIN_Q = 2;
+		warp "in_moc_16",19,161;
+		donpcevent "Beholder#ASNTEST::OnResetmob";
+		donpcevent "Standby Room#ASNTEST::OnStart";
+	}
+	end;
+}
+
+in_moc_16,69,158,0	duplicate(SinTrap)	01_2	-1,0,0
+in_moc_16,68,159,0	duplicate(SinTrap)	01_3	-1,0,0
+in_moc_16,69,159,0	duplicate(SinTrap)	01_4	-1,0,0
+in_moc_16,64,162,0	duplicate(SinTrap)	02_1	-1,0,0
+in_moc_16,65,162,0	duplicate(SinTrap)	02_2	-1,0,0
+in_moc_16,64,163,0	duplicate(SinTrap)	02_3	-1,0,0
+in_moc_16,65,163,0	duplicate(SinTrap)	02_4	-1,0,0
+in_moc_16,62,168,0	duplicate(SinTrap)	03_1	-1,0,0
+in_moc_16,63,168,0	duplicate(SinTrap)	03_2	-1,0,0
+in_moc_16,62,169,0	duplicate(SinTrap)	03_3	-1,0,0
+in_moc_16,63,169,0	duplicate(SinTrap)	03_4	-1,0,0
+in_moc_16,66,170,0	duplicate(SinTrap)	04_1	-1,0,0
+in_moc_16,67,170,0	duplicate(SinTrap)	04_2	-1,0,0
+in_moc_16,66,171,0	duplicate(SinTrap)	04_3	-1,0,0
+in_moc_16,67,171,0	duplicate(SinTrap)	04_4	-1,0,0
+in_moc_16,64,174,0	duplicate(SinTrap)	05_1	-1,0,0
+in_moc_16,64,175,0	duplicate(SinTrap)	05_2	-1,0,0
+in_moc_16,65,174,0	duplicate(SinTrap)	05_3	-1,0,0
+in_moc_16,65,175,0	duplicate(SinTrap)	05_4	-1,0,0
+in_moc_16,72,174,0	duplicate(SinTrap)	06_1	-1,0,0
+in_moc_16,72,175,0	duplicate(SinTrap)	06_2	-1,0,0
+in_moc_16,73,174,0	duplicate(SinTrap)	06_3	-1,0,0
+in_moc_16,73,175,0	duplicate(SinTrap)	06_4	-1,0,0
+in_moc_16,72,166,0	duplicate(SinTrap)	07_1	-1,0,0
+in_moc_16,72,167,0	duplicate(SinTrap)	07_2	-1,0,0
+in_moc_16,73,166,0	duplicate(SinTrap)	07_3	-1,0,0
+in_moc_16,73,167,0	duplicate(SinTrap)	07_4	-1,0,0
+in_moc_16,72,168,0	duplicate(SinTrap)	08_1	-1,0,0
+in_moc_16,72,169,0	duplicate(SinTrap)	08_2	-1,0,0
+in_moc_16,73,168,0	duplicate(SinTrap)	08_3	-1,0,0
+in_moc_16,73,169,0	duplicate(SinTrap)	08_4	-1,0,0
+in_moc_16,78,168,0	duplicate(SinTrap)	09_1	-1,0,0
+in_moc_16,78,169,0	duplicate(SinTrap)	09_2	-1,0,0
+in_moc_16,79,168,0	duplicate(SinTrap)	09_3	-1,0,0
+in_moc_16,79,169,0	duplicate(SinTrap)	09_4	-1,0,0
+in_moc_16,80,172,0	duplicate(SinTrap)	10_1	-1,0,0
+in_moc_16,81,172,0	duplicate(SinTrap)	10_2	-1,0,0
+in_moc_16,82,172,0	duplicate(SinTrap)	10_3	-1,0,0
+in_moc_16,83,172,0	duplicate(SinTrap)	10_4	-1,0,0
+in_moc_16,80,173,0	duplicate(SinTrap)	10_5	-1,0,0
+in_moc_16,81,173,0	duplicate(SinTrap)	10_6	-1,0,0
+in_moc_16,82,173,0	duplicate(SinTrap)	10_7	-1,0,0
+in_moc_16,83,173,0	duplicate(SinTrap)	10_8	-1,0,0
+in_moc_16,88,174,0	duplicate(SinTrap)	11_1	-1,0,0
+in_moc_16,88,175,0	duplicate(SinTrap)	11_2	-1,0,0
+in_moc_16,89,174,0	duplicate(SinTrap)	11_3	-1,0,0
+in_moc_16,89,175,0	duplicate(SinTrap)	11_4	-1,0,0
+in_moc_16,86,166,0	duplicate(SinTrap)	12_1	-1,0,0
+in_moc_16,86,167,0	duplicate(SinTrap)	12_2	-1,0,0
+in_moc_16,87,166,0	duplicate(SinTrap)	12_3	-1,0,0
+in_moc_16,87,167,0	duplicate(SinTrap)	12_4	-1,0,0
+in_moc_16,90,164,0	duplicate(SinTrap)	13_1	-1,0,0
+in_moc_16,90,165,0	duplicate(SinTrap)	13_2	-1,0,0
+in_moc_16,91,164,0	duplicate(SinTrap)	13_3	-1,0,0
+in_moc_16,91,165,0	duplicate(SinTrap)	13_4	-1,0,0
+in_moc_16,84,160,0	duplicate(SinTrap)	14_1	-1,0,0
+in_moc_16,85,160,0	duplicate(SinTrap)	14_2	-1,0,0
+in_moc_16,86,160,0	duplicate(SinTrap)	14_3	-1,0,0
+in_moc_16,87,160,0	duplicate(SinTrap)	14_4	-1,0,0
+in_moc_16,88,160,0	duplicate(SinTrap)	14_5	-1,0,0
+in_moc_16,89,160,0	duplicate(SinTrap)	14_6	-1,0,0
+in_moc_16,84,161,0	duplicate(SinTrap)	14_7	-1,0,0
+in_moc_16,85,161,0	duplicate(SinTrap)	14_8	-1,0,0
+in_moc_16,86,161,0	duplicate(SinTrap)	14_9	-1,0,0
+in_moc_16,87,161,0	duplicate(SinTrap)	14_10	-1,0,0
+in_moc_16,88,161,0	duplicate(SinTrap)	14_11	-1,0,0
+in_moc_16,89,161,0	duplicate(SinTrap)	14_12	-1,0,0
+in_moc_16,86,154,0	duplicate(SinTrap)	15_1	-1,0,0
+in_moc_16,86,155,0	duplicate(SinTrap)	15_2	-1,0,0
+in_moc_16,87,154,0	duplicate(SinTrap)	15_3	-1,0,0
+in_moc_16,87,155,0	duplicate(SinTrap)	15_4	-1,0,0
+in_moc_16,84,150,0	duplicate(SinTrap)	16_1	-1,0,0
+in_moc_16,84,151,0	duplicate(SinTrap)	16_2	-1,0,0
+in_moc_16,85,150,0	duplicate(SinTrap)	16_3	-1,0,0
+in_moc_16,85,151,0	duplicate(SinTrap)	16_4	-1,0,0
+in_moc_16,90,150,0	duplicate(SinTrap)	17_1	-1,0,0
+in_moc_16,90,151,0	duplicate(SinTrap)	17_2	-1,0,0
+in_moc_16,91,150,0	duplicate(SinTrap)	17_3	-1,0,0
+in_moc_16,91,151,0	duplicate(SinTrap)	17_4	-1,0,0
+in_moc_16,86,146,0	duplicate(SinTrap)	18_1	-1,0,0
+in_moc_16,86,147,0	duplicate(SinTrap)	18_2	-1,0,0
+in_moc_16,87,146,0	duplicate(SinTrap)	18_3	-1,0,0
+in_moc_16,87,147,0	duplicate(SinTrap)	18_4	-1,0,0
+
+in_moc_16,87,137,0	script	Keeper of the Door#ASN	45,2,1,{
+OnInit:
+	disablenpc "Keeper of the Door#ASN";
+	end;
+
+OnTouch_:
+	donpcevent "Thomas#ASNTEST::OnDisable";
+	if (ASSIN_Q == 3)
+		ASSIN_Q = 3;
+	else
+		ASSIN_Q = 4;
+	warp "in_moc_16",87,102;
+	savepoint "in_moc_16",16,13,1,1;
+	end;
+
+OnEnable:
+	mapannounce "in_moc_16","ประตูห้องถัดไปที่พิกัด 87 137 ได้เปิดออกแล้ว",bc_map;
+	enablenpc "Keeper of the Door#ASN";
+	end;
+
+OnDisable:
+	disablenpc "Keeper of the Door#ASN";
+	end;
+}
+
+in_moc_16,3,3,0	script	timestopper#1	-1,{
+OnEnable:
+	initnpctimer;
+	end;
+
+OnTimer187000:
+	donpcevent "Thomas#ASNTEST::OnDisable";
+	stopnpctimer;
+	end;
+
+OnDisable:
+	stopnpctimer;
+	end;
+
+OnMyMobDead:
+	mapannounce "in_moc_16","เฮ้ นั่นมันบ้าอะไรน่ะ! ฉันบอกคุณแล้วว่า: ไม่มีการฆ่ามอนเตอร์!",bc_map;
+	mapannounce "in_moc_16","ฉันจะพาเธอกลับมา... *เฮ้อ...*",bc_map;
+	ASSIN_Q = 3;
+	warp "in_moc_16",87,102;
+	killmonster "in_moc_16","timestopper#1::OnMyMobDead";
+	end;
+}
+
+in_moc_16,89,98,1	script	Thomas#ASNTEST	118,5,1,{
+	end;
+
+OnTouch_:
+	if (ASSIN_Q == 4) {
+		mes "[Thomas]";
+		mes "บ้าเอ้ย...! ดูเหมือนคุณจะเจ็บปวดมากเลยนะ ^666666*เฮ้อ*^000000 ให้เวลาฉันสักครู่ ให้ฉันพยายามฟื้นฟู HP และ SP ของคุณ...";
+		percentheal 100,100;
+		next;
+		mes "[Thomas]";
+		mes "ดูเหมือนคุณจะมีช่วงเวลาที่ยากลำบาก คุณพยายามมากเกินไป หรือไม่ก็พยายามไม่มากพอ เด็กน้อย";
+		next;
+		switch(select("ฉันจะลองอีกครั้ง!:ฉัน... ฉันเลิก!")) {
+		case 1:
+			mes "[Thomas]";
+			mes "อืม โอเค";
+			mes "โชคดีนะ";
+			close;
+		case 2:
+			mes "[Thomas]";
+			mes "ฮะ...";
+			mes "เลิกทดสอบเถอะ? เอาล่ะ ฉันเดาว่าคุณคงไม่อยากเสียเวลาของเราอีกต่อไปแล้ว";
+			next;
+			mes "[Thomas]";
+			mes "โอ้ เฮ้ อย่าลืมบันทึกจุดเกิดใหม่ของคุณในเมืองด้วย";
+			close2;
+			mapannounce "in_moc_16",strcharinfo(0) + " กลัวเลยออกจากการทดสอบ...คนต่อไปคือใคร?!",bc_map;
+			ASSIN_Q = 0;
+			ASSIN_Q2 = 0;
+			changequest 8004,8000;
+			savepoint "in_moc_16",18,14,1,1;
+			warp "in_moc_16",18,14;
+			donpcevent "Standby Room#ASNTEST::OnStart";
+			end;
+		}
+	}
+
+	mes "[Thomas]";
+	mes "เฮ้ ฉันชื่อโธมัส ฉันเป็นคนรับผิดชอบการทดสอบการใช้ทักษะการซ่อนตัวของคุณ คิดว่าคุณทำได้ดีไหม";
+	next;
+	mes "[Thomas]";
+	mes "ฟังนะ ในการทดสอบนี้ คุณไม่สามารถฆ่าสัตว์ประหลาดตัวไหนได้เลย เป้าหมายของคุณคือไปหา 'บาร์คาร์ดี' ที่อยู่ฝั่งตรงข้ามของห้องนี้";
+	next;
+	mes "[Thomas]";
+	mes "สรุปก็คือ ให้ไปที่อีกฝั่งของห้องนี้แล้วพบกับ 'บาร์คาร์ดี' โดยไม่ต้องฆ่าสัตว์ประหลาดแม้แต่ตัวเดียว เข้าใจไหม";
+	next;
+	mes "[Thomas]";
+	mes "ถ้าคุณวิ่งหนี เลือดกำเดาไหลและหมดสติหรืออะไรทำนองนั้น ฉันจะสอบตก พูดพอแล้ว มาดูกันว่าคุณได้อะไรมาบ้าง";
+	close2;
+	ASSIN_Q = 4;
+
+	monster "in_moc_16",81,77,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",82,77,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",83,77,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",84,77,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",85,77,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",86,77,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",88,77,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",89,77,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",90,77,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",77,77,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",78,56,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",79,56,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",80,56,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",81,56,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",91,55,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",92,56,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",93,56,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",94,56,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",95,56,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",96,56,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",97,56,"Mummy",1041,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",76,62,"Hydra",1068,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",79,62,"Hydra",1068,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",79,65,"Hydra",1068,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",76,65,"Hydra",1068,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",96,62,"Hydra",1068,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",96,65,"Hydra",1068,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",99,62,"Hydra",1068,1,"timestopper#1::OnMyMobDead";
+	monster "in_moc_16",99,65,"Hydra",1068,1,"timestopper#1::OnMyMobDead";
+	end;
+
+OnDisable:
+	donpcevent "Standby Room#ASNTEST::OnStart";
+	killmonster "in_moc_16","timestopper#1::OnMyMobDead";
+	end;
+}
+
+in_moc_16,87,48,2	script	Barcardi#ASN	725,2,2,{
+	end;
+OnTouch_:
+	donpcevent "timestopper#1::OnDisable";
+	donpcevent "Thomas#ASNTEST::OnDisable";
+	mes "[Barcardi]";
+	mes "โอ้! ยินดีด้วย!";
+	mes "ตอนนี้คุณสามารถไปยังห้องของหัวหน้ากิลด์ของเราได้แล้ว โชคดี!!";
+	close2;
+	ASSIN_Q = 5;
+	changequest 8004,8005;
+	warp "in_moc_16",181,183;
+	end;
+}
+
+in_moc_16,182,169,0	script	Maze Assistant	45,1,1,{
+OnTouch_:
+	if (ASSIN_Q == 5 || ASSIN_Q == 6) {
+		warp "in_moc_16",181,183;
+		ASSIN_Q++;
+		if (!isbegin_quest(8006))
+			changequest 8005,8006;
+	}
+	else {
+		mapannounce "in_moc_16",strcharinfo(0)+" ได้เข้าสู่ 'ห้องของหัวหน้ากิลด์'",bc_map;
+		savepoint "in_moc_16",181,183,1,1;
+		donpcevent "Guildmaster#ASN1::OnCast";
+		warp "in_moc_16",167,113;
+		end;
+	}
+}
+
+in_moc_16,167,110,0	script	Guildmaster#ASN1	-1,3,1,{
+OnTouch_:
+	savepoint "in_moc_16",167,110,1,1;
+	mes "[Guildmaster]";
+	mes "ยินดีต้อนรับ ";
+	mes "ที่นี่เรียกว่า 'ห้องของหัวหน้ากิลด์' ซึ่งเป็นที่ลึกที่สุดในกิลด์นักฆ่า";
+	next;
+	mes "[Guildmaster]";
+	mes "ฉันจะทดสอบคุณง่ายๆ หน่อย โปรดหาทางผ่านเขาวงกตนี้และมาหาฉัน เขาวงกตแห่งนี้จะคอยปกป้องกิลด์ของเราจากผู้บุกรุก";
+	next;
+	mes "[Guildmaster]";
+	mes "ฉันตั้งตารอที่จะพบคุณที่ปลายเขาวงกต";
+	close;
+
+OnCast:
+	mapannounce "in_moc_16","...อาสาสมัครคนต่อไปกรุณาเข้ามา",bc_map;
+	end;
+}
+
+in_moc_16,149,80,4	script	Guildmaster#ASN2	106,1,1,{
+	end;
+OnTouch_:
+	if (checkre(0))
+		savepoint "morocc",100,100,1,1;
+	else
+		savepoint "moc_ruins",79,99,1,1;
+	if (ASSIN_Q == 7 && BaseJob == Job_Thief) {
+		ASSIN_Q = 8;
+		mes "[Guildmaster]";
+		mes "ยินดีต้อนรับ";
+		mes "ฉันขอโทษที่ทำให้คุณต้องผ่านเขาวงกต";
+		next;
+		mes "[Guildmaster]";
+		mes "ฉันเพิ่งเห็นประวัติของคุณเมื่อกี้ คุณเป็นที่รู้จักดีในฐานะหัวขโมยที่มีความกล้า เราไม่ค่อยได้รับนักฆ่าที่มีระดับความสามารถเหมือนคุณ";
+		next;
+		mes "[Guildmaster]";
+		mes "ฉันขอถามคุณหน่อยได้ไหม ถ้าคุณไม่รังเกียจ? คุณไม่ต้องประหม่า แค่จำไว้ว่า: ถ้าคุณโกหก ฉันจะฆ่าคุณ";
+		next;
+		mes "[Guildmaster]";
+		mes "ก่อนอื่น คุณคิดว่าอะไรคือสิ่งสำคัญที่สุดของนักฆ่า?";
+		next;
+		switch(select("พลังมากขึ้น : ความภาคภูมิใจของนักฆ่า : การฝึกฝนที่ไม่มีที่สิ้นสุด")) {
+		case 1:
+			mes "[Guildmaster]";
+			mes "พลังมากกว่านี้...";
+			mes "ใช่แล้ว คุณอาจจะคิดว่านักฆ่าแข็งแกร่งกว่าโจรก็ได้";
+			next;
+			mes "[Guildmaster]";
+			mes "อย่างไรก็ตาม คุณต้องการพลังมากกว่านี้เพื่ออะไร? เพื่ออวดอ้าง? เพื่อแก้แค้นส่วนตัว? คุณจะใช้พลังนี้เพื่อจุดประสงค์ใด?";
+			next;
+			mes "[Guildmaster]";
+			mes "ทำไมคุณถึงอยากแข็งแกร่งกว่าที่เป็นอยู่ตอนนี้?";
+			next;
+			switch(select("แก้แค้น...!:เงิน~:ฉันอยากเดินทาง")) {
+			case 1:
+				mes "[Guildmaster]";
+				mes "การแก้แค้น...?";
+				mes "ใช่ ฉันเข้าใจ เราทุกคนต่างก็มีความแค้นเคืองต่อคนอื่นในที่สุด";
+				next;
+				mes "[Guildmaster]";
+				mes "อย่างไรก็ตาม โปรดจำไว้ว่าเราไม่มีสิทธิ์ที่จะผูกพันทางอารมณ์ จงปฏิบัติหน้าที่ของคุณอย่างไม่มีข้อกังขา นั่นคือวิถีของเรา";
+				next;
+				mes "[Guildmaster]";
+				mes "การเป็นนักฆ่าหมายถึงการละทิ้งอัตตา";
+				next;
+				break;
+			case 2:
+				ASSIN_Q = 9;
+				mes "[Guildmaster]";
+				mes "เหตุผลทางการเงิน...? ฉันจะไม่ปฏิเสธว่าเราทุกคนต้องการเงินเพื่อดำรงชีวิต แต่การเป็นนักฆ่าหมายถึงการดำรงชีวิตเพื่อจุดมุ่งหมายที่ยิ่งใหญ่กว่า";
+				next;
+				mes "[Guildmaster]";
+				mes "การเป็นนักฆ่าหมายถึงการละทิ้งความผูกพันทางโลก...";
+				next;
+				break;
+			case 3:
+				ASSIN_Q = 10;
+				mes "[Guildmaster]";
+				mes "เป็นความคิดที่ดี การเดินทางรอบโลกจะทำให้คุณได้ประสบการณ์ที่หลากหลายยิ่งขึ้น";
+				next;
+				mes "[Guildmaster]";
+				mes "พวกเราส่วนใหญ่มักจะหลีกเลี่ยงการรวมกลุ่มกัน แต่ฉันแน่ใจว่าคุณคงเข้าใจแล้วใช่ไหม";
+				next;
+				mes "[Guildmaster]";
+				mes "ในทางหนึ่ง การเป็นนักฆ่าก็คือการใช้ชีวิตอย่างโดดเดี่ยว...";
+				next;
+				break;
+			}
+			break;
+		case 2:
+			mes "[Guildmaster]";
+			mes "ความภาคภูมิใจของนักฆ่า...";
+			mes "นักฆ่าคนอื่นบอกคุณไหมว่า...?";
+			next;
+			mes "[Guildmaster]";
+			mes "ความภาคภูมิใจนั้นสำคัญแน่นอน แต่ความภาคภูมิใจจะไม่มีค่าอะไรเลยหากคุณไม่มีความสามารถ";
+			next;
+			mes "[Guildmaster]";
+			mes "นักฆ่าส่วนใหญ่ที่คุณเคยพบมาก่อนฉันเป็นพี่น้องที่ผ่านช่วงเวลาที่ยากลำบากมาด้วยกันมากมาย";
+			next;
+			mes "[Guildmaster]";
+			mes "ฉันเข้าใจว่าทำไมความภาคภูมิใจและศักดิ์ศรีของพวกเขาจึงมีความสำคัญกับพวกเขามาก แล้วคุณอยากเป็นนักฆ่าเพราะอะไรล่ะ";
+			next;
+			switch(select("ฉันชอบความสันโดษ:หาเงินจากการเป็นนักฆ่า:พวกมันดูน่าสนใจ")) {
+			case 1:
+				ASSIN_Q = 11;
+				mes "[Guildmaster]";
+				mes "คุณเข้าใจประเด็นแล้ว...";
+				mes "พวกเราเหงา เราจะอยู่คนเดียวเสมอ แม้จะอยู่ด้วยกัน...";
+				next;
+				mes "[Guildmaster]";
+				mes "ในทางหนึ่ง การเป็นนักฆ่าไม่ได้มีความหมายอะไรเลย ฉันว่าอย่างนั้น";
+				next;
+				mes "[Guildmaster]";
+				mes "แต่เหมือนที่ฉันบอกคุณไปก่อนหน้านี้ เรามีสหาย ฉันแนะนำว่าควรมีสหายอย่างน้อยหนึ่งคนคอยสนับสนุนคุณเมื่อคุณทำภารกิจ";
+				next;
+				break;
+			case 2:
+				ASSIN_Q = 12;
+				mes "[Guildmaster]";
+				mes "ฉันปฏิเสธไม่ได้ว่าเราต้องการเงินเพื่อเลี้ยงชีพ แต่คุณไม่คิดเหรอว่าเราควรแสวงหาสิ่งที่สำคัญยิ่งกว่าเงิน";
+				next;
+				break;
+			case 3:
+				ASSIN_Q = 13;
+				mes "[Guildmaster]";
+				mes "สไตล์และรูปลักษณ์ภายนอกเป็นเพียงผิวเผิน เป็นเรื่องน่าเศร้าที่หลายคนคิดแบบนี้...";
+				next;
+				mes "[Guildmaster]";
+				mes "นักฆ่าที่น่าละอายเหล่านั้นที่สูญเสียสมาธิที่แท้จริงของพวกเขาได้รับการจัดการตามแบบฉบับของเราเอง...";
+				next;
+				mes "[Guildmaster]";
+				mes "อย่าลืม...";
+				mes "นักฆ่าไม่เล่นๆ เราไม่สนใจสไตล์หรือกระแสใดๆ และเราจะไม่มีวันสนใจ";
+				next;
+				break;
+			}
+			break;
+		case 3:
+			mes "[Guildmaster]";
+			mes "ฝึกฝนอย่างไม่สิ้นสุด...";
+			mes "ฉันคิดว่าคุณมีคุณสมบัติที่จำเป็น มีเหตุผลอะไรไหมที่คุณอยากเป็นนักฆ่า?";
+			next;
+			mes "[Guildmaster]";
+			mes "ไม่เหมือนกับคลาส Thief งานนักฆ่าไม่อนุญาตให้เอาแต่ใจตัวเอง บอกฉันมาว่าทำไมคุณถึงฝึกฝนอย่างไม่สิ้นสุด";
+			next;
+			switch(select("เพื่อขยายทักษะของฉัน:นั่นคือเป้าหมายของฉัน:เพื่อการพัฒนาจิตวิญญาณ")) {
+			case 1:
+				ASSIN_Q = 14;
+				mes "[Guildmaster]";
+				mes "การเรียนรู้ทักษะนั้นเกิดขึ้นตามธรรมชาติเมื่อเป็นอาชีพนักฆ่า แต่คุณไม่ควรคิดว่าทักษะเป็นคุณค่าสูงสุดของการฝึกฝนของคุณ";
+				next;
+				mes "[Guildmaster]";
+				mes "คุณจะไม่พอใจที่ได้เป็นนักฆ่าถ้าคุณคิดแบบนี้...";
+				next;
+				break;
+			case 2:
+				ASSIN_Q = 15;
+				mes "[Guildmaster]";
+				mes "มันเป็นเป้าหมายของคุณใช่ไหม? ฉันเดาว่าคุณต้องมีจุดมุ่งหมาย...";
+				next;
+				mes "[Guildmaster]";
+				mes "ครั้งหนึ่งฉันเคยรู้จักคนๆ หนึ่งที่ตั้งเป้าหมายไว้ เมื่อนานมาแล้ว ฉันได้พบกับคนๆ หนึ่งระหว่างทำภารกิจที่ต้องการหลีกเลี่ยงการถูกฆ่าก่อนที่จะได้เป็นอัศวินระดับ 54";
+				next;
+				mes "[Guildmaster]";
+				mes "น่าเสียดายที่ฉันต้องฆ่าเขาตั้งแต่ก่อนที่เขาจะถึงระดับ 52... ^666666*ถอนหายใจ*^000000 ช่างเถอะ";
+				next;
+				mes "ฉันเป็นห่วงคุณนิดหน่อย ฉันหวังว่าคุณคงเข้าใจว่าเมื่อคุณได้เป็นนักฆ่าแล้ว คุณจะไม่มีทางหันหลังกลับได้...";
+				next;
+				break;
+			case 3:
+				ASSIN_Q = 16;
+				mes "[Guildmaster]";
+				mes "เป็นความคิดที่ดี...";
+				mes "นั่นเป็นวิธีที่ดีในการปรับปรุงตัวเอง ฉันเคยเห็นคนหลายคนที่รู้วิธีที่จะแข็งแกร่งทางร่างกายแต่ไม่รู้จักสภาพจิตใจ";
+				next;
+				mes "[Guildmaster]";
+				mes "ฉันหวังว่าคุณจะไม่ใช่คนหน้าไหว้หลังหลอก วินัยทางจิตวิญญาณเป็นวิธีที่ดีที่สุดในการเอาชีวิตรอดของคุณ";
+				next;
+				break;
+			}
+			break;
+		}
+		mes "[Guildmaster]";
+		mes "น่าเศร้าที่คนโง่บางคนยังอยากเป็นนักฆ่าแม้ว่าพวกเขาจะไม่รู้อะไรเลยก็ตาม...";
+		next;
+		mes "[Guildmaster]";
+		mes "พวกเขาสร้างปัญหาและนำความเสื่อมเสียมาให้เรา การกระทำของพวกเขามักจะส่งผลให้เกิดสถานการณ์ที่เลวร้าย";
+		next;
+		mes "[Guildmaster]";
+		mes "ระวังไว้ไม่งั้นคุณจะกลายเป็นหนึ่งในนั้นเมื่อคุณได้เป็นนักฆ่าแล้ว ความรับผิดชอบนั้นขึ้นอยู่กับคุณเพียงคนเดียว...";
+		next;
+		mes "[Guildmaster]";
+		mes "ถ้าตอนนี้คุณสามารถเป็นนักฆ่าได้ สิ่งแรกที่คุณจะทำคืออะไร?";
+		next;
+		switch(select("ฉันจะไปล่าทันที :มีคนกำลังรอฉันอยู่ :ลองดูสิว่าฉันจะช่วยในฐานะนักฆ่าได้อย่างไร")) {
+		case 1:
+			mes "[Guildmaster]";
+			mes "ล่า...";
+			mes "แค่นั้นเองเหรอ...?";
+			next;
+			switch(select("ฉันอยากจะเพิ่มเลเวลให้เร็ว : ฉันอยากจะสำรวจทักษะนักฆ่าของฉัน : ฉันจะไปที่ที่ฉันไม่สามารถไปได้ในฐานะหัวขโมย")) {
+			case 1:
+				.@assassin_sangdam += 10;
+				mes "[Guildmaster]";
+				mes "อย่าทำอะไรโดยประมาท...";
+				mes "การเป็นนักฆ่าไม่ได้ทำให้คุณกลายเป็นคนใหม่ และอย่าพึ่งโอกาส";
+				next;
+				break;
+			case 2:
+				.@assassin_sangdam += 5;
+				mes "[Guildmaster]";
+				mes "การตรวจสอบตัวเองเป็นเรื่องที่ดี ฉันเข้าใจว่าคุณจะต้องตื่นเต้นกับการเปลี่ยนแปลงครั้งใหญ่ในความสามารถของคุณ";
+				next;
+				mes "[Guildmaster]";
+				mes "ในระหว่างนี้ ฉันหวังว่าคุณจะไม่ลืมความเป็นนักฆ่า";
+				next;
+				break;
+			case 3:
+				mes "[Guildmaster]";
+				mes "ดีมาก...";
+				mes "การสำรวจสถานที่ที่คุณไม่เคยเห็นมาก่อน แต่จงรู้ไว้ว่าการเป็นนักฆ่าไม่ได้ทำให้คุณกลายเป็นคนใหม่";
+				next;
+				mes "[Guildmaster]";
+				mes "อย่าฝืนตัวเองมากเกินไป";
+				mes "ใช้เวลาของคุณให้เต็มที่และเดินทางอย่างชาญฉลาด";
+				next;
+				break;
+			}
+			break;
+		case 2:
+			mes "[Guildmaster]";
+			mes "ใครกำลังรอคุณอยู่บ้าง ฉันขอถามหน่อย";
+			next;
+			switch(select("เพื่อนของฉัน.:เพื่อนร่วมกิลด์ของฉัน.:คนรักของฉัน.")) {
+			case 1:
+				.@assassin_sangdam += 5;
+				mes "[Guildmaster]";
+				mes "ฉันเห็น...";
+				mes "ขอบคุณพวกเขาที่ห่วงใยคุณ แม้ว่าคุณจะอยู่คนเดียวก็ตาม";
+				next;
+				break;
+			case 2:
+				.@assassin_sangdam += 5;
+				mes "[Guildmaster]";
+				mes "ยอดเยี่ยม...";
+				mes "สหายที่คุณยอมตายเพื่อ...";
+				next;
+				mes "[Guildmaster]";
+				mes "ในฐานะนักฆ่า จงหางานที่คุณทำเพื่อพวกเขาได้โดยที่พวกเขาไม่รู้..";
+				next;
+				break;
+			case 3:
+				mes "[Guildmaster]";
+				mes "ฮ่าๆ ความต้องการของร่างกายบางครั้งก็ยากที่จะเพิกเฉย การยอมรับส่วนหนึ่งของธรรมชาติของมนุษย์นั้นดีที่สุด";
+				next;
+				mes "[Guildmaster]";
+				if (Sex == SEX_MALE)
+					mes "แต่คุณต้องไม่เปิดเผยด้านนักฆ่าในชีวิตของคุณให้เธอรู้ ไม่ว่าจะต้องทำอย่างไรก็ตาม"; 
+				else
+					mes "แต่คุณต้องไม่เปิดเผยด้านนักฆ่าในชีวิตของคุณให้เขาฟัง ไม่ว่าจะต้องทำอย่างไรก็ตาม";
+				next;
+				mes "[Guildmaster]";
+				mes "จงรักคนรักของคุณตลอดไป แม้ว่าคุณจะไม่สามารถแสดงมันออกมาได้อย่างเปิดเผย บางครั้ง ชีวิตไม่อนุญาตให้คุณพบกับรักแท้มากกว่าหนึ่งครั้ง";
+				next;
+				break;
+			}
+			break;
+		case 3:
+			mes "[Guildmaster]";
+			mes "นั่นน่าชื่นชมมาก มีอะไรที่คุณอยากจะถามฉันไหม?";
+			next;
+			switch(select("สถานที่ที่นักฆ่าสามารถเลเวลอัพได้...:เป้าหมายหลักในฐานะนักฆ่า:คำปรึกษาทางการเงิน")) {
+			case 1:
+				.@assassin_sangdam += 5;
+				mes "[Guildmaster]";
+				mes "ทุกอย่างขึ้นอยู่กับจิตใจของคุณ สถานที่ไหนก็ได้ที่เหมาะแก่การเพิ่มเลเวลตามสภาพจิตใจของคุณ";
+				next;
+				mes "[Guildmaster]";
+				mes "คุณต้องรู้วิธีเอาตัวรอดในสถานการณ์ใดๆ ก็ได้";
+				next;
+				break;
+			case 2:
+				mes "[Guildmaster]";
+				mes "มีนักฆ่ามากมายที่นั่น มองว่าพวกเขาเป็นผู้ฝึกสอนของคุณ และขอความเห็นจากพวกเขา";
+				next;
+				mes "[Guildmaster]";
+				mes "ฉันหวังว่าคุณจะกลายเป็นนักฆ่าที่เก่งกาจ และเมื่อคุณถึงระดับหนึ่งแล้ว คุณต้องแนะนำมือใหม่เหมือนที่ผู้ฝึกสอนของคุณทำ";
+				next;
+				break;
+			case 3:
+				.@assassin_sangdam += 10;
+				mes "[Guildmaster]";
+				mes "โอ้พระเจ้า...";
+				mes "คุณกำลังวางแผนที่จะเป็นนักฆ่าเพื่อหาเงินหรือเปล่า";
+				next;
+				mes "[Guildmaster]";
+				mes "ผู้คนประเภทนั้นไม่เป็นที่ต้อนรับ หากเป้าหมายของคุณคือเช่นนั้น คุณอาจต้องการพิจารณาอาขีพของคุณใหม่...";
+				next;
+				break;
+			}
+			break;
+		}
+		mes "[Guildmaster]";
+		mes "ดีใจที่ได้พบคุณ คุณทำให้ฉันนึกถึงวันเก่าๆ ที่แสนดี";
+		next;
+		mes "[Guildmaster]";
+		mes "กรุณาให้เวลาฉันสักวินาที...";
+		next;
+		mapannounce "in_moc_16","ผู้ที่เกี่ยวข้องกับการทดสอบ " + strcharinfo(0) + " โปรดมารวมตัวกันต่อหน้าฉัน",bc_map;
+		mes "[Guildmaster]";
+		mes "ผู้ที่เกี่ยวข้องกับการทดสอบ " + strcharinfo(0) + " โปรดมารวมตัวกันต่อหน้าฉัน";
+		next;
+		mes "[Guildmaster]";
+		mes "พวกเขาจะมาถึงเร็วๆ นี้";
+		next;
+		enablenpc "[Huey]";
+		enablenpc "[Khai]";
+		enablenpc "[The Anonymous One]";
+		enablenpc "[Barcardi]";
+		enablenpc "[Beholder]";
+		enablenpc "[Thomas]";
+		enablenpc "[Gayle Maroubitz]";
+		mes "[The Anonymous One]";
+		mes "ฉันอยู่ที่นี่";
+		next;
+		mes "[Guildmaster]";
+		mes "ฉันอยากฟังความคิดเห็นของคุณเกี่ยวกับ " + strcharinfo(0) + " สำหรับการทดสอบการเปลี่ยนงาน";
+		next;
+		mes "[The Anonymous One]";
+		mes "Ah yeah...";
+		mes "ฉันคิดว่า";
+		mes ""+ strcharinfo(0) +"";
+		mes "ค่อนข้างดี";
+		next;
+		mes "[Guildmaster]";
+		mes "ก็...";
+		mes "The Anonymous One สนับสนุนคุณ แล้วคุณล่ะ Huey?";
+		next;
+		if (ASSIN_Q3 == 1) { // player Job Level was above 48
+			mes "[Huey]";
+			mes "หายาก";
+			mes "คุณสามารถบอกได้จาก job level";
+			next;
+			mes "[Huey]";
+			mes "ฉันเห็นด้วยกับผู้ไม่ประสงค์ออกนาม";
+		}
+		else { // player Job Level was below 48
+			mes "[Huey]";
+			mes "แม้ว่า "+ strcharinfo(0) +" จะดูอ่อนโยนและนุ่มนวลเกินไป เหมือนแมวเหมียว แต่ "+ strcharinfo(0) +" ก็มีของดีอยู่เหมือนกัน";
+			next;
+			mes "[Huey]";
+			mes "ถ้าคุณไม่รังเกียจ ฉันก็อยากจะกลับไปทำงาน";
+			next;
+			mes "[Guildmaster]";
+			mes "ใช่...";
+			mes "แค่นั้นเอง ฮิวอี้";
+		}
+		next;
+		mes "[Guildmaster]";
+		mes "แล้ว...";
+		mes "'Beholder' คุณมีความคิดเห็นอย่างไร?";
+		next;
+		disablenpc "[Huey]";
+		mes "[Beholder]";
+		mes "ฉันไม่ชอบคะแนนของหลักสูตรเลย แต่ยังไงก็ตามฉันก็ผ่านการทดสอบทั้งหมด ฉันโอเคกับคนๆ นี้";
+		next;
+		mes "[Guildmaster]";
+		mes "อืม...";
+		mes "ดูเหมือนเราทุกคนจะเห็นด้วย ดี ฉันไม่มีปัญหาอะไรกับ "+ strcharinfo(0) +" เช่นกัน...";
+		next;
+		switch(ASSIN_Q) {
+		case 8:
+			mes "[Guildmaster]";
+			mes "ถึงแม้คุณจะถูกขับเคลื่อนด้วยความแค้นส่วนตัว ฉันหวังว่ามันจะหายไปเมื่อคุณฝึกฝน...";
+			next;
+			break;
+		case 9:
+			mes "[Guildmaster]";
+			mes "แม้ว่าตอนนี้ความกังวลหลักของคุณคือการเป็นคนรวย ฉันแน่ใจว่าคุณจะแสวงหาสิ่งที่ยิ่งใหญ่กว่านั้น...";
+			next;
+			break;
+		case 10:
+			mes "[Guildmaster]";
+			mes "ฉันอยากเดินทางไปทั่วโลก ฉันหวังว่าตัวตนที่แท้จริงของคุณจะค้นพบได้ในการเดินทางของคุณ...";
+			next;
+			break;
+		case 11:
+			mes "[Guildmaster]";
+			mes "ดูเหมือนคุณจะรู้เรื่องนักฆ่ามาก ฉันไม่คิดว่าความหงุดหงิดจากการอยู่คนเดียวจะเป็นเรื่องยากสำหรับคุณ...";
+			next;
+			break;
+		case 12:
+			mes "[Guildmaster]";
+			mes "คุณเป็นคนโง่เขลาเรื่องเงิน แต่ฉันเชื่อว่าคุณควรจะเอาชนะมันได้";
+			next;
+			mes "[Guildmaster]";
+			mes "แม้ว่าตอนนี้ฉันจะไม่ไว้ใจคุณ แต่ฉันจะให้โอกาสคุณ...";
+			next;
+			break;
+		case 13:
+			mes "[Guildmaster]";
+			mes "แม้ว่าคุณจะหลงใหลในนักฆ่าเพียงผิวเผิน แต่ฉันเชื่อว่าคุณจะตระหนักถึงคุณค่าที่แท้จริงของงานนักฆ่าในไม่ช้า";
+			next;
+			break;
+		case 14:
+			mes "[Guildmaster]";
+			mes "หนึ่งในคนไม่กี่คนที่แสวงหาทักษะที่ดีกว่า ฉันหวังว่าคุณจะตระหนักถึงความสำคัญของวินัยทางจิตวิญญาณในไม่ช้า";
+			next;
+			break;
+		case 15:
+			mes "[Guildmaster]";
+			mes "เร็วหรือช้า คุณจะพบกับเป้าหมายใหม่ที่คุณสามารถอุทิศตัวเองให้...";
+			next;
+			break;
+		case 16:
+			mes "[Guildmaster]";
+			mes "ฉันรู้ว่าบางคนสนใจแค่การฝึกฝนร่างกายของพวกเขา แต่";
+			mes "ฉันเชื่อว่าคุณโดดเด่นท่ามกลางพวกเขา...";
+			next;
+		}
+		switch(ASSIN_Q3) {
+		case 1: // player Job Level was above 48
+			mes "[Guildmaster]";
+			mes "ฉันพูดมากเกินไปแล้ว โปรดเลือกอาวุธเป็นของขวัญ";
+			next;
+			mes "[Guildmaster]";
+			mes "คุณสามารถเลือก Jur, Katar, Main Gauche หรือ Gladius ได้ ในฐานะปรมาจารย์ ฉันชอบพวกเขาทั้งหมด";
+			next;
+			switch(select("Jur:Katar:Main Gauche:Gladius")) {
+			case 1:
+				mes "[Guildmaster]";
+				mes "Jur...";
+				mes "เลือกได้ดีเลย หวังว่ามันจะเป็นประโยชน์กับคุณ";
+				getitem 1251,1; //Jur_
+				break;
+			case 2:
+				mes "[Guildmaster]";
+				mes "Katar...";
+				mes "นี่เธออยู่นี่";
+				mes "ถึงแม้จะใช้แล้ว ฉันก็รู้ว่ามันจะมีประโยชน์ต่อเธอ";
+				getitem 1253,1; //Katar_
+				break;
+			case 3:
+				mes "[Guildmaster]";
+				mes "เข้าใจแล้ว คุณต้องใช้มือทั้งสองข้าง นี่ เอา Main Gauche ของคุณไป";
+				getitem 1208,1; //Main_Gauche_
+				break;
+			case 4:
+				mes "[Guildmaster]";
+				mes "ดาบกลาดิอุส...";
+				mes "มันเคยครองตลาดอาวุธของนักฆ่า ช่วยดูแลดาบกลาดิอุสของฉันด้วย";
+				getitem 1220,1; //Gladius_
+			}
+			ASSIN_Q3 = 3;
+			next;
+			break;
+		case 2: // player Job Level was below 48
+			mes "[Guildmaster]";
+			mes "ฉันพูดมากเกินไปแล้ว";
+			mes "กรุณารับอันนี้ไปก่อน";
+			next;
+			switch(rand(1,5)) {
+			case 1:
+				getitem 1207,1; //Main_Gauche
+				break;
+			case 2:
+				getitem 1250,1; //Jur
+				break;
+			case 3:
+				getitem 1216,1; //Stiletto
+				break;
+			case 4:
+				getitem 1201,1; //Knife
+				break;
+			case 5:
+				getitem 1252,1; //Katar
+			}
+			ASSIN_Q3 = 3;
+		}
+		mes "[Guildmaster]";
+		mes "เอาล่ะ ฉันจะให้โทเค็นแก่คุณ โปรดส่งคืนให้กับผู้เชี่ยวชาญนักฆ่า ฮิวอี้ผู้ดูดุร้าย ที่ทางเข้า";
+		next;
+		mes "[Guildmaster]";
+		mes "เมื่อคุณได้รับโทเค็นนี้ ฮิวอี้จะเลื่อนตำแหน่งคุณให้เป็นนักฆ่า";
+		next;
+		mes "[Guildmaster]";
+		mes "คุณ " + strcharinfo(0) + " เลือกที่จะใช้ชีวิตเป็นนักฆ่า ขอให้คุณเรียนรู้วิถีของเราและเป็นแบบอย่างอันมีเกียรติแก่ผู้อื่น";
+		if (checkre(0))
+			savepoint "morocc",100,100,1,1;
+		else
+			savepoint "moc_ruins",79,99,1,1;
+		getitem 1008,1; //Frozen_Heart
+		ASSIN_Q = 17;
+		changequest 8006,8007;
+		next;
+		mes "[Guildmaster]";
+		mes "เอาล่ะ พวกเจ้าทุกคนกลับไปประจำตำแหน่งได้แล้ว ข้าพเจ้าจะส่งพวกเจ้าไปที่ทางเข้าด้วย ไปกันเถอะ...";
+		disablenpc "[Huey]";
+		disablenpc "[Khai]";
+		disablenpc "[The Anonymous One]";
+		disablenpc "[Barcardi]";
+		disablenpc "[Beholder]";
+		disablenpc "[Thomas]";
+		disablenpc "[Gayle Maroubitz]";
+		close2;
+		warp "in_moc_16",17,19;
+		end;
+	}
+	else if (ASSIN_Q == 17) {
+		mes "[Guildmaster]";
+		mes "เอิ่ม...?";
+		mes "ทำไมคุณถึงเข้ามาที่นี่ได้...?";
+		next;
+		mes "[Guildmaster]";
+		mes "คุณทำแบบทดสอบเสร็จแล้ว ทำไมคุณไม่ลองไปเอา ^006699Necklace of Oblivion^000000 เพื่อจะได้เปลี่ยนอาชีพล่ะ?";
+		close2;
+		warp "in_moc_16",17,19;
+		end;
+	}
+	else if (ASSIN_Q > 7 && ASSIN_Q < 17) {
+		ASSIN_Q = 7;
+		mes "[Guildmaster]";
+		mes "นี่มันบ้าอะไรเนี่ย คุณกด 'ยกเลิก' ระหว่างดำเนินการอยู่ คุณอยากเปลี่ยนงานหรืออะไร";
+		next;
+		mes "[Guildmaster]";
+		mes "^666666*ถอนหายใจ...*^000000";
+		mes "โอเค มาเริ่มกันใหม่ ถ้าคราวนี้คุณไม่ฟัง คุณจะออกจากห้องนี้ไปอย่างมีชีวิตไม่ได้ คุณจับฉันได้เหรอ";
+		close;
+	}
+	else {
+		mes "[Guildmaster]";
+		mes "อืม? คุณเข้ามาที่นี่ได้ยังไง?";
+		next;
+		mes "[Guildmaster]";
+		mes "คุณทำแบบทดสอบเสร็จแล้ว ไปเอา ^006699Necklace of Oblivion^000000 ของคุณไปให้ผู้ชายหน้าตาดุร้ายคนนั้นซะ เพื่อที่คุณจะได้เปลี่ยนอาชีพ!";
+		close2;
+		warp "in_moc_16",17,19;
+		end;
+	}
+}
+
+in_moc_16,186,81,1	script	Master Assist	55,1,1,{
+	mes "[Assistent Gayle Maroubitz]";
+	mes "ขออภัย ฉันไม่ได้เป็นคนรับผิดชอบเรื่องการเปลี่ยนอาชีพ ไปหา Guildmaster ตามที่เขาบอกคุณ";
+	close;
+}
+
+in_moc_16,170,90,0	script	info 1	-1,{
+OnTouch_:
+	mes "[Guildmaster]";
+	mes "ฮะ.";
+	mes "ตอนนี้สถานที่นั้นถูกปิดกั้นแล้ว คุณอาจต้องการตรวจสอบอีกด้านหนึ่ง";
+	close;
+}
+
+in_moc_16,153,85,0	script	info 2	-1,1,1,{
+OnTouch_:
+	mes "[Guildmaster]";
+	mes "คุณเริ่มอุ่นขึ้นแล้ว คุณเกือบจะถึงแล้ว แค่หันกลับมานิดหน่อย";
+	close;
+}
+
+in_moc_16,160,85,0	script	info 3	-1,1,1,{
+OnTouch_:
+	mes "[Guildmaster]";
+	mes "อืม";
+	mes "ตอนนี้สถานที่นั้นถูกบล็อคแล้ว";
+	close;
+}
+
+in_moc_16,175,89,0	script	info 4	-1,1,1,{
+OnTouch_:
+	mes "[Guildmaster]";
+	mes "อืม...";
+	mes "คุณกำลังจะไปหาผู้ช่วยของฉัน คุณยังต้องการคุยกับเขาอยู่ไหม?";
+	close;
+}
+
+in_moc_16,164,88,0	script	info 5	-1,{
+OnTouch_:
+	mes "[Guildmaster]";
+	mes "ทำได้ดีมาก...";
+	mes "ฉันรู้สึกได้ถึงฝีเท้าของคุณใกล้ฉัน";
+	close;
+}
+
+in_moc_16,149,95,0	script	info 6	-1,1,1,{
+OnTouch_:
+	mes "[Guildmaster]";
+	mes "หืม? ไม่เลวเลย คุณใกล้จะถึงแล้ว";
+	close;
+}
+
+in_moc_16,180,101,0	script	info 7	-1,1,1,{
+OnTouch_:
+	mes "[Guildmaster]";
+	mes "ฉันไม่คิดว่าคุณจะไปในทางที่ถูกต้อง";
+	close;
+}
+
+in_moc_16,186,107,0	script	info 8	-1,1,1,{
+OnTouch_:
+	mes "[Guildmaster]";
+	mes "ไม่มีทิศทางเลยใช่มั้ย?";
+	close;
+}
+
+-	script	#moc_assin_dup	-1,{
+	end;
+
+OnInit:
+	disablenpc();
+	end;
+}
+in_moc_16,156,87,1	duplicate(#moc_assin_dup)	[Huey]	55
+in_moc_16,156,85,1	duplicate(#moc_assin_dup)	[Khai]	730
+in_moc_16,156,83,1	duplicate(#moc_assin_dup)	[The Anonymous One]	106
+in_moc_16,156,81,2	duplicate(#moc_assin_dup)	[Barcardi]	725
+in_moc_16,156,79,1	duplicate(#moc_assin_dup)	[Beholder]	118
+in_moc_16,156,77,1	duplicate(#moc_assin_dup)	[Thomas]	118
+in_moc_16,156,75,1	duplicate(#moc_assin_dup)	[Gayle Maroubitz]	55

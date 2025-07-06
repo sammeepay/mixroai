@@ -1,0 +1,65 @@
+//===== rAthena Script ======================================= 
+//= Advance Class jobchanger after kRO Normals.
+//===== By: ==================================================
+//= Nana
+//= finished, optimized and tested by Lupus
+//===== Current Version: ===================================== 
+//= 1.3
+//===== Compatible With: ===================================== 
+//= rAthena Project
+//===== Description: ========================================= 
+//= Advance Class jobchanger after kRO Normals.
+//===== Additional Comments: ================================= 
+//= 1.1 Made all into functions, additional checks, etc. [Lupus]
+//= 1.2 Made numbers into constants. [Vicious]
+//= 1.3 Now saves/restores all the quest skills [Lupus]
+//============================================================ 
+
+valkyrie,44,55,5	script	Sniper#Valkyrie	727,{
+	if (ADVJOB == 0 || Upper != 1) {
+		set .@karma_d,rand(1,10);
+		if (.@karma_d > 4) {
+			mes "[Sniper]";
+			mes "ขอแสดงความยินดีด้วย";
+			mes "ขอแสดงความนับถือต่อเหล่านักรบ!";
+			close;
+		}
+		mes "[Sniper]";
+		mes "นัดเดียว";
+		mes "ฆ่าครั้งเดียว";
+		mes "มันไม่ยากเลยเมื่อคุณพัฒนาวิสัยทัศน์สำหรับรูปแบบการต่อสู้แบบนั้น";
+		close;
+	}
+	else if (ADVJOB == Job_Sniper && Class == Job_Archer_High && JobLevel > 39) {
+		mes "[Sniper]";
+		mes "โลกต้องการนักธนูผู้แข็งแกร่งอย่างคุณ คุณพร้อมสำหรับความรับผิดชอบอันยิ่งใหญ่นี้หรือยัง";
+		next;
+		mes "[Sniper]";
+		mes "คุณเต็มใจที่จะก้าวไปสู่ขั้นต่อไปและกลายเป็นนักซุ่มยิงหรือไม่";
+		next;
+		if (select("ไม่:ใช่.") == 1) {
+			mes "[Sniper]";
+			mes "เมื่อคุณพร้อมแล้ว โปรดกลับมาได้";
+			mes "ขอแสดงความนับถือต่อเหล่านักรบ!";
+			close;
+		}
+		if (SkillPoint) {
+			mes "[Sniper]";
+			mes "คุณยังสามารถเรียนรู้ทักษะเพิ่มเติมได้ โปรดใช้แต้มทักษะที่เหลือทั้งหมดก่อนกลับมาหาฉัน";
+			close;
+		}
+		jobchange Job_Sniper;
+		set ADVJOB,0;
+		mes "[Sniper]";
+		mes "ยินดีด้วย!";
+		mes "ในฐานะมือปืน ฉันหวังว่าเหล่าสมุนของความชั่วร้ายจะไม่มีวันปลอดภัยตราบใดที่พวกมันยังอยู่ในสายตาของคุณ!";
+		close;
+	}
+	mes "[Sniper]";
+	mes "ยินดีต้อนรับสู่วัลฮัลลา หอเกียรติยศ";
+	next;
+	mes "[Sniper]";
+	mes "โปรดทำให้ตัวเองรู้สึกสบายขณะที่อยู่ที่นี่";
+	mes "ขอแสดงความนับถือต่อเหล่านักรบ!";
+	close;
+}

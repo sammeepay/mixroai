@@ -1,0 +1,94 @@
+//===== rAthena Script =======================================
+//= Advance Class jobchanger after kRO Normals.
+//===== By: ==================================================
+//= Nana
+//= finished, optimized and tested by Lupus
+//===== Current Version: =====================================
+//= 1.3
+//===== Compatible With: =====================================
+//= rAthena Project
+//===== Description: =========================================
+//= Advance Class jobchanger after kRO Normals.
+//===== Additional Comments: =================================
+//= 1.1 Made all into functions, additional checks, etc. [Lupus]
+//= 1.2 Made numbers into constants. [Vicious]
+//= 1.3 Now saves/restores all the quest skills [Lupus]
+//============================================================
+
+
+valkyrie,53,58,3	script	Stalker#Valkyrie	747,{
+		if (ADVJOB == 0 || Upper != 1) {
+				set .@karma_d,rand(1,10);
+				if (.@karma_d > 4) {
+						mes "[stalker]";
+						mes "ยินดีด้วย.";
+						mes "เป็นเกียรติแก่นักรบ!";
+						close;
+				}
+				mes "[stalker]";
+				mes "เฮ้ ...";
+				mes "มันยาก";
+				mes "เป็นฮีโร่";
+				mes "และเป็นเงา";
+				mes "ไม่น่าเชื่อถือ";
+				mes "ส่อเสียด...";
+				next;
+				mes "[stalker]";
+				mes "แต่เมื่อ";
+				mes "กำลังจะขรุขระ";
+				mes "เพื่อนของฉันรู้ว่าพวกเขา";
+				mes "สามารถไว้วางใจฉันได้";
+				mes "ฉันต้องการพวกเขาและ";
+				mes "พวกเขาต้องการฉัน";
+				close;
+		}
+		else if (ADVJOB == Job_Stalker && Class == Job_Thief_High && JobLevel > 39) {
+				mes "[stalker]";
+				mes "โลกนี้ต้องการ";
+				mes "ฮีโร่มากขึ้นที่เป็น";
+				mes "เต็มใจที่จะเดินตามสาย";
+				mes "ระหว่างคำสั่งและความไร้ระเบียบ";
+				next;
+				mes "[stalker]";
+				mes "คุณพร้อมหรือยัง";
+				mes "เพื่อเข้าร่วมอันดับ";
+				mes "ของแอบดูดีที่สุด";
+				mes "นักรบ?คุณพร้อมหรือยัง";
+				mes "จะกลายเป็นยกร่าง?";
+				next;
+				if (select("ไม่: ยี่สิบ") == 1) {
+						mes "[stalker]";
+						mes "เมื่อคุณพร้อม";
+						mes "อย่าลังเลที่จะกลับมา";
+						mes "เป็นเกียรติแก่นักรบ!";
+						close;
+				}
+				if (SkillPoint) {
+						mes "[stalker]";
+						mes "ยังคงเป็นไปได้ที่คุณจะได้เรียนรู้ทักษะเพิ่มเติมกรุณาใช้";
+						mes "คะแนนทักษะที่เหลืออยู่ทั้งหมดของคุณก่อนกลับมาหาฉัน";
+						close;
+				}
+				jobchange Job_Stalker;
+				set ADVJOB,0;
+				mes "[stalker]";
+				mes "ยินดีด้วย!";
+				mes "ฉันหวังว่า";
+				mes "คุณแทงคนที่เหมาะสม";
+				mes "ด้านหลังขับไล่";
+				mes "ชั่วร้ายโดยใช้ตัวเอง";
+				mes "วิธีการขี้ขลาด!";
+				close;
+		}
+		mes "[stalker]";
+		mes "Welcome";
+		mes "ถึง Valhalla";
+		mes "Hall of Honor";
+		next;
+		mes "[stalker]";
+		mes "กรุณาทำ";
+		mes "ตัวเองสบาย";
+		mes "ในขณะที่คุณอยู่ที่นี่";
+		mes "เป็นเกียรติแก่นักรบ!";
+		close;
+}
